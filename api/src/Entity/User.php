@@ -3,7 +3,10 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
+use App\Controller\MFKDFPolicyControllers\GetMFKDFByEmailController;
 use App\Repository\UserRepository;
 use App\State\UserMasterKeyDoubleHasher;
 use Doctrine\ORM\Mapping as ORM;
@@ -13,16 +16,39 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation as Serializer;
 use Symfony\Component\Uid\Uuid;
+use ApiPlatform\OpenApi\Model;
+
 
 #[ApiResource(
     operations: [
-        new Post(uriTemplate: '/auth/register', validationContext: ['groups' => ['Default', 'user:create']],
+        new Post(uriTemplate: '/auth/register', validationContext: ['groups' => ['Default', 'user:create', 'mfkdfpolicy:create']],
             processor: UserMasterKeyDoubleHasher::class),
-    ],
-    normalizationContext: ['groups' => ['user:read']],
-    denormalizationContext: ['groups' => ['user:create', 'user:update']],
-)]
+        new Get(uriTemplate: '/auth/user/{id}/policy',
+            controller: GetMFKDFByEmailController::class,
+            openapiContext: [
+                'summary' => 'Retrieve MFKDF policy for a user by email',
+                'parameters' => [
+                    [
+                        'name' => 'id',
+                        'in' => 'path',
+                        'required' => true,
+                        'schema' => [
+                            'type' => 'string',
+                            'format' => 'email'
+                        ],
+                        'description' => 'The email of the user to retrieve the policy for.',
+                    ]
+                ]
+            ],
+            normalizationContext: ['groups' => ['mfkdfpolicy:read']],
+            validationContext: ['groups' => ['mfkdfpolicy:read']],
+            read: false
 
+        )
+    ],
+    normalizationContext: ['groups' => ['user:read', 'mfkdfpolicy:read']],
+    denormalizationContext: ['groups' => ['user:create', 'user:update', 'mfkdfpolicy:read']],
+)]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -55,6 +81,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:create', 'user:update'])]
     private ?string $masterKey = null;
 
+    #[ORM\OneToOne(mappedBy: 'policyUser', cascade: ['persist', 'remove'])]
+    #[Groups(['user:create', 'user:update', 'mfkdfpolicy:read'])]
+    private ?MFKDFPolicy $mfkdfpolicy = null;
+
 
     public function getId(): Uuid
     {
@@ -80,13 +110,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        return (string)$this->email;
     }
 
     /**
+     * @return list<string>
      * @see UserInterface
      *
-     * @return list<string>
      */
     public function getRoles(): array
     {
@@ -148,7 +178,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here
-         $this->masterKey = null;
+        $this->masterKey = null;
+    }
+
+    public function getMfkdfpolicy(): ?MFKDFPolicy
+    {
+        return $this->mfkdfpolicy;
+    }
+
+    public function setMfkdfpolicy(MFKDFPolicy $mfkdfpolicy): static
+    {
+        // set the owning side of the relation if necessary
+        if ($mfkdfpolicy->getPolicyUser() !== $this) {
+            $mfkdfpolicy->setPolicyUser($this);
+        }
+
+        $this->mfkdfpolicy = $mfkdfpolicy;
+
+        return $this;
     }
 
 }
