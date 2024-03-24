@@ -31,7 +31,7 @@ class MFKDFPolicy
     #[ORM\JoinColumn(nullable: false)]
     private ?User $policyUser = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'text')]
     #[Groups(['mfkdfpolicy:read', 'mfkdfpolicy:create', 'mfkdfpolicy:update', 'user:create', 'user:update'])]
     private string $policy;
 
