@@ -4,19 +4,18 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use App\Controller\MFKDFPolicyControllers\GetMFKDFByEmailController;
+use App\Controller\User\GetUserIdentityController;
 use App\Repository\UserRepository;
 use App\State\UserMasterKeyDoubleHasher;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation as Serializer;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Uid\Uuid;
-use ApiPlatform\OpenApi\Model;
+use Symfony\Component\Validator\Constraints as Assert;
 
 
 #[ApiResource(
@@ -44,7 +43,15 @@ use ApiPlatform\OpenApi\Model;
             validationContext: ['groups' => ['mfkdfpolicy:read']],
             read: false
 
-        )
+        ),
+        new Get(
+            uriTemplate: '/me',
+            controller: GetUserIdentityController::class,
+            normalizationContext: ['groups' => ['user:identity']],
+            validationContext: ['groups' => ['user:identity']],
+            read: false
+        ),
+
     ],
     normalizationContext: ['groups' => ['user:read', 'mfkdfpolicy:read']],
     denormalizationContext: ['groups' => ['user:create', 'user:update', 'mfkdfpolicy:read']],
@@ -59,7 +66,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
     #[Serializer\Groups(['user:read'])]
-    private Uuid|null $id = null;
+    private Uuid $id;
 
     #[ORM\Column(length: 180)]
     #[Groups(['user:read', 'user:create', 'user:update'])]
@@ -84,6 +91,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'policyUser', cascade: ['persist', 'remove'])]
     #[Groups(['user:create', 'user:update', 'mfkdfpolicy:read'])]
     private ?MFKDFPolicy $mfkdfpolicy = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    #[Groups(['user:create', 'user:update', 'user:read', 'user:identity'])]
+    private ?string $identity = null;
 
 
     public function getId(): Uuid
@@ -196,6 +207,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->mfkdfpolicy = $mfkdfpolicy;
 
         return $this;
+    }
+
+    public function getIdentity(): ?string
+    {
+        return $this->identity;
+    }
+
+    public function setIdentity(?string $identity): void
+    {
+        $this->identity = $identity;
     }
 
 }
