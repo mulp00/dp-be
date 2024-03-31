@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\MFKDFPolicyControllers;
+namespace App\Controller\MFKDFPolicy;
 
 use ApiPlatform\Api\IriConverterInterface;
 use App\Entity\MFKDFPolicy;

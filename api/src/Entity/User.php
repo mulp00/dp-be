@@ -5,10 +5,13 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
-use App\Controller\MFKDFPolicyControllers\GetMFKDFByEmailController;
+use App\Controller\MFKDFPolicy\GetMFKDFByEmailController;
+use App\Controller\SerializedUserGroup\CreateSerializedGroupController;
 use App\Controller\User\GetUserIdentityController;
 use App\Repository\UserRepository;
 use App\State\UserMasterKeyDoubleHasher;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -16,11 +19,15 @@ use Symfony\Component\Serializer\Annotation as Serializer;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
+use ApiPlatform\OpenApi\Model;
+use ArrayObject;
 
 
 #[ApiResource(
     operations: [
-        new Post(uriTemplate: '/auth/register', validationContext: ['groups' => ['Default', 'user:create', 'mfkdfpolicy:create']],
+        new Post(
+            uriTemplate: '/auth/register',
+            validationContext: ['groups' => ['Default', 'user:create', 'mfkdfpolicy:create']],
             processor: UserMasterKeyDoubleHasher::class),
         new Get(uriTemplate: '/auth/user/{id}/policy',
             controller: GetMFKDFByEmailController::class,
@@ -51,6 +58,29 @@ use Symfony\Component\Validator\Constraints as Assert;
             validationContext: ['groups' => ['user:identity']],
             read: false
         ),
+        new Post(
+            uriTemplate: '/serializedGroup',
+            controller: CreateSerializedGroupController::class,
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new ArrayObject([
+                            'application/ld+json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'serializedGroup' => [
+                                            'type' => 'string',
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    )
+                )
+            ),
+
+            validationContext: ['groups' => []],
+        )
 
     ],
     normalizationContext: ['groups' => ['user:read', 'mfkdfpolicy:read']],
@@ -94,7 +124,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'text', nullable: true)]
     #[Groups(['user:create', 'user:update', 'user:read', 'user:identity'])]
-    private ?string $identity = null;
+    private ?string $serializedIdentity = null;
+
+    #[ORM\OneToMany(mappedBy: 'groupUser', targetEntity: SerializedUserGroup::class, orphanRemoval: true)]
+    private Collection $serializedUserGroups;
+
+    #[ORM\ManyToMany(targetEntity: Group::class, mappedBy: 'users')]
+    private Collection $groups;
+
+    public function __construct()
+    {
+        $this->serializedUserGroups = new ArrayCollection();
+        $this->groups = new ArrayCollection();
+    }
 
 
     public function getId(): Uuid
@@ -209,14 +251,71 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getIdentity(): ?string
+    public function getSerializedIdentity(): ?string
     {
-        return $this->identity;
+        return $this->serializedIdentity;
     }
 
-    public function setIdentity(?string $identity): void
+    public function setSerializedIdentity(?string $serializedIdentity): void
     {
-        $this->identity = $identity;
+        $this->serializedIdentity = $serializedIdentity;
+    }
+
+    /**
+     * @return Collection<int, SerializedUserGroup>
+     */
+    public function getSerializedUserGroups(): Collection
+    {
+        return $this->serializedUserGroups;
+    }
+
+    public function addSerializedUserGroup(SerializedUserGroup $serializedUserGroup): static
+    {
+        if (!$this->serializedUserGroups->contains($serializedUserGroup)) {
+            $this->serializedUserGroups->add($serializedUserGroup);
+            $serializedUserGroup->setGroupUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSerializedUserGroup(SerializedUserGroup $serializedUserGroup): static
+    {
+        if ($this->serializedUserGroups->removeElement($serializedUserGroup)) {
+            // set the owning side to null (unless already changed)
+            if ($serializedUserGroup->getGroupUser() === $this) {
+                $serializedUserGroup->setGroupUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Group>
+     */
+    public function getGroups(): Collection
+    {
+        return $this->groups;
+    }
+
+    public function addGroup(Group $group): static
+    {
+        if (!$this->groups->contains($group)) {
+            $this->groups->add($group);
+            $group->addUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeGroup(Group $group): static
+    {
+        if ($this->groups->removeElement($group)) {
+            $group->removeUser($this);
+        }
+
+        return $this;
     }
 
 }
