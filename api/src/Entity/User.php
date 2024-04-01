@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use App\Controller\MFKDFPolicy\GetMFKDFByEmailController;
 use App\Controller\SerializedUserGroup\CreateSerializedGroupController;
+use App\Controller\SerializedUserGroup\GetSerializedUserGroupCollection;
 use App\Controller\User\GetUserIdentityController;
 use App\Repository\UserRepository;
 use App\State\UserMasterKeyDoubleHasher;
@@ -17,6 +18,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation as Serializer;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 use ApiPlatform\OpenApi\Model;
@@ -25,6 +27,7 @@ use ArrayObject;
 
 #[ApiResource(
     operations: [
+        new Get(normalizationContext: ['groups' => ['tst']]),
         new Post(
             uriTemplate: '/auth/register',
             validationContext: ['groups' => ['Default', 'user:create', 'mfkdfpolicy:create']],
@@ -55,10 +58,9 @@ use ArrayObject;
             uriTemplate: '/me',
             controller: GetUserIdentityController::class,
             normalizationContext: ['groups' => ['user:identity']],
-            validationContext: ['groups' => ['user:identity']],
             read: false
         ),
-        new Post(
+        new Post( // TODO presunout do SerializedUserGroup, nejak tam nefunguje vyuziti controlleru i pres read:false
             uriTemplate: '/serializedGroup',
             controller: CreateSerializedGroupController::class,
             openapi: new Model\Operation(
@@ -70,7 +72,10 @@ use ArrayObject;
                                     'properties' => [
                                         'serializedGroup' => [
                                             'type' => 'string',
-                                        ]
+                                        ],
+                                        'name' => [
+                                            'type' => 'string',
+                                        ],
                                     ]
                                 ]
                             ]
@@ -78,10 +83,16 @@ use ArrayObject;
                     )
                 )
             ),
-
-            validationContext: ['groups' => []],
-        )
-
+            normalizationContext: ['groups' => ['serializedUserGroup:create']],
+            denormalizationContext: ['groups' => ['serializedUserGroup:create']],
+            validationContext: ['groups' => ['serializedUserGroup:create']],
+            read: false,
+        ),
+        new Get(
+            uriTemplate: '/serializedGroupCollection',
+            controller: GetSerializedUserGroupCollection::class,
+            read: false,
+        ),
     ],
     normalizationContext: ['groups' => ['user:read', 'mfkdfpolicy:read']],
     denormalizationContext: ['groups' => ['user:create', 'user:update', 'mfkdfpolicy:read']],
@@ -99,7 +110,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Uuid $id;
 
     #[ORM\Column(length: 180)]
-    #[Groups(['user:read', 'user:create', 'user:update'])]
+    #[Groups(['user:read', 'user:create', 'user:update', 'userCollection:read', 'serializedUserGroup:create', 'user:identity'])]
     private ?string $email = null;
 
     /**
@@ -127,6 +138,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $serializedIdentity = null;
 
     #[ORM\OneToMany(mappedBy: 'groupUser', targetEntity: SerializedUserGroup::class, orphanRemoval: true)]
+    #[Groups(['serializedUserGroup:read', 'serializedUserGroup:create'])]
     private Collection $serializedUserGroups;
 
     #[ORM\ManyToMany(targetEntity: Group::class, mappedBy: 'users')]

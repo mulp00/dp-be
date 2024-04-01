@@ -2,13 +2,17 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\GroupRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation as Serializer;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Uid\Uuid;
 
+#[ApiResource()]
 #[ORM\Entity(repositoryClass: GroupRepository::class)]
 #[ORM\Table(name: '`group`')]
 class Group
@@ -17,18 +21,28 @@ class Group
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
+    #[Serializer\Groups(['group:create'])]
     private Uuid $id;
 
+
+    #[ORM\Column(length: 180)]
+    #[Groups(['group:create','group:read', 'serializedUserGroup:create'])]
+    private ?string $name = null;
+
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'groups')]
-    #[Serializer\Groups(['group:read'])]
+    #[Serializer\Groups(['group:read', 'group:create', 'serializedUserGroup:create', 'serializedUserGroup:read'])]
     private Collection $users;
 
-
-
-    public function __construct(User $creator)
+    /**
+     * @param string|null $name
+     * @param Collection $users
+     */
+    public function __construct(?string $name, User $creator)
     {
+        $this->name = $name;
         $this->users = new ArrayCollection([$creator]);
     }
+
 
     public function getId(): Uuid
     {
@@ -58,4 +72,16 @@ class Group
 
         return $this;
     }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): void
+    {
+        $this->name = $name;
+    }
+
+
 }

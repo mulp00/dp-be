@@ -2,11 +2,21 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model;
+use App\Controller\SerializedUserGroup\CreateSerializedGroupController;
 use App\Repository\SerializedUserGroupRepository;
+use ArrayObject;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Serializer\Annotation as Serializer;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Symfony\Component\Uid\Uuid;
 
+#[ApiResource()
+
+]
 #[ORM\Entity(repositoryClass: SerializedUserGroupRepository::class)]
 class SerializedUserGroup
 {
@@ -17,16 +27,17 @@ class SerializedUserGroup
     private Uuid $id;
 
     #[ORM\ManyToOne(inversedBy: 'serializedUserGroups')]
+    #[Serializer\Groups(['serializedUserGroup:create'])]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $groupUser = null;
 
     #[ORM\Column(type: 'text', nullable: false)]
-    #[Serializer\Groups(['serializedUserGroup:read'])]
+    #[Serializer\Groups(['serializedUserGroup:read', 'serializedUserGroup:create'])]
     private ?string $serializedGroup = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
-    #[Serializer\Groups(['serializedUserGroup:read'])]
+    #[Serializer\Groups(['serializedUserGroup:read', 'serializedUserGroup:create'])]
     private ?Group $groupEntity = null;
 
     /**
