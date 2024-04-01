@@ -33,14 +33,20 @@ class Group
     #[Serializer\Groups(['group:read', 'group:create', 'serializedUserGroup:create', 'serializedUserGroup:read'])]
     private Collection $users;
 
+    #[ORM\ManyToOne(inversedBy: 'createdGroups')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['group:create','group:read', 'serializedUserGroup:create', 'serializedUserGroup:read'])]
+    private ?User $creator = null;
+
     /**
      * @param string|null $name
-     * @param Collection $users
+     * @param User $creator
      */
     public function __construct(?string $name, User $creator)
     {
         $this->name = $name;
         $this->users = new ArrayCollection([$creator]);
+        $this->creator = $creator;
     }
 
 
@@ -81,6 +87,18 @@ class Group
     public function setName(?string $name): void
     {
         $this->name = $name;
+    }
+
+    public function getCreator(): ?User
+    {
+        return $this->creator;
+    }
+
+    public function setCreator(?User $creator): static
+    {
+        $this->creator = $creator;
+
+        return $this;
     }
 
 

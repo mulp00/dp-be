@@ -9,6 +9,7 @@ class SerializedUserGroupDTO
 {
     public string $name;
     public string $serializedGroup;
+    public PublicUserDTO $creator;
 
     /**
      * @var PublicUserDTO[]
@@ -22,14 +23,8 @@ class SerializedUserGroupDTO
     {
         $this->name = $serializedUserGroup->getGroupEntity()->getName();
         $this->serializedGroup = $serializedUserGroup->getSerializedGroup();
-        $this->users = array_map(function (User $user) {
-            // This calls the mapUsers method for each user
-            return $this->mapUsers($user);
-        }, $serializedUserGroup->getGroupEntity()->getUsers()->toArray()) ;
-    }
-
-    private function mapUsers(User $user): PublicUserDTO{
-        return new PublicUserDTO($user);
+        $this->users = (new PublicUserGroupDTO($serializedUserGroup->getGroupEntity()->getUsers()->toArray()))->getUsers();
+        $this->creator = new PublicUserDTO($serializedUserGroup->getGroupEntity()->getCreator());
     }
 
     public function getSerializedGroup(): string
@@ -42,9 +37,15 @@ class SerializedUserGroupDTO
         return $this->users;
     }
 
+
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function getCreator(): PublicUserDTO
+    {
+        return $this->creator;
     }
 
 

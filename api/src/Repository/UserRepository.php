@@ -38,6 +38,27 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
+    /**
+     * Searches for users by partial email.
+     *
+     * @param string $emailPart The partial email to search for.
+     * @param int|null $limit Optional limit on the number of results to return.
+     * @return User[] An array of User objects.
+     */
+    public function findByPartialEmail(string $emailPart, ?int $limit = null): array
+    {
+        $queryBuilder = $this->createQueryBuilder('u')
+            ->where('u.email LIKE :emailPart')
+            ->setParameter('emailPart', '%' . $emailPart . '%');
+
+        if ($limit !== null) {
+            $queryBuilder->setMaxResults($limit);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */

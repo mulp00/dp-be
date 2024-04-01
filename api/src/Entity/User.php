@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Post;
 use App\Controller\MFKDFPolicy\GetMFKDFByEmailController;
 use App\Controller\SerializedUserGroup\CreateSerializedGroupController;
 use App\Controller\SerializedUserGroup\GetSerializedUserGroupCollection;
+use App\Controller\User\GetUserByEmailController;
 use App\Controller\User\GetUserIdentityController;
 use App\Repository\UserRepository;
 use App\State\UserMasterKeyDoubleHasher;
@@ -94,6 +95,11 @@ use ArrayObject;
             controller: GetSerializedUserGroupCollection::class,
             read: false,
         ),
+        new Get(
+            uriTemplate: '/getByEmail/{id}',
+            controller: GetUserByEmailController::class,
+            read: false,
+        ),
     ],
     normalizationContext: ['groups' => ['user:read', 'mfkdfpolicy:read']],
     denormalizationContext: ['groups' => ['user:create', 'user:update', 'mfkdfpolicy:read']],
@@ -149,10 +155,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:create'])]
     private ?string $keyPackage = null;
 
+    #[ORM\OneToMany(mappedBy: 'creator', targetEntity: Group::class)]
+    private Collection $createdGroups;
+
     public function __construct()
     {
         $this->serializedUserGroups = new ArrayCollection();
         $this->groups = new ArrayCollection();
+        $this->createdGroups = new ArrayCollection();
     }
 
 
@@ -343,6 +353,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setKeyPackage(string $keyPackage): static
     {
         $this->keyPackage = $keyPackage;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Group>
+     */
+    public function getCreatedGroups(): Collection
+    {
+        return $this->createdGroups;
+    }
+
+    public function addCreatedGroup(Group $createdGroup): static
+    {
+        if (!$this->createdGroups->contains($createdGroup)) {
+            $this->createdGroups->add($createdGroup);
+            $createdGroup->setCreator($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCreatedGroup(Group $createdGroup): static
+    {
+        if ($this->createdGroups->removeElement($createdGroup)) {
+            // set the owning side to null (unless already changed)
+            if ($createdGroup->getCreator() === $this) {
+                $createdGroup->setCreator(null);
+            }
+        }
 
         return $this;
     }
