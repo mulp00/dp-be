@@ -13,6 +13,7 @@ use App\Repository\UserRepository;
 use App\State\UserMasterKeyDoubleHasher;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -143,6 +144,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\ManyToMany(targetEntity: Group::class, mappedBy: 'users')]
     private Collection $groups;
+
+    #[ORM\Column(type: 'text')]
+    #[Groups(['user:create'])]
+    private ?string $keyPackage = null;
 
     public function __construct()
     {
@@ -326,6 +331,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if ($this->groups->removeElement($group)) {
             $group->removeUser($this);
         }
+
+        return $this;
+    }
+
+    public function getKeyPackage(): ?string
+    {
+        return $this->keyPackage;
+    }
+
+    public function setKeyPackage(string $keyPackage): static
+    {
+        $this->keyPackage = $keyPackage;
 
         return $this;
     }
