@@ -1,28 +1,29 @@
 <?php
 
-namespace App\Controller\SerializedUserGroup;
+namespace App\Controller\WelcomeMessage;
 
 use ApiPlatform\Api\IriConverterInterface;
 use App\DTO\SerializedUserGroupDTO;
 use App\Entity\Group;
 use App\Entity\SerializedUserGroup;
 use App\Entity\User;
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use App\Entity\WelcomeMessage;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Exception\ORMException;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Attribute\AsController;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 
+
 #[AsController]
-class CreateSerializedGroupController
+class CreateWelcomeMessage
 {
     private Security $security;
     private SerializerInterface $serializer;
     private EntityManagerInterface $entityManager;
+
 
     /**
      * @param Security $security
@@ -39,6 +40,7 @@ class CreateSerializedGroupController
 
     public function __invoke(Request $request, IriConverterInterface $iriConverter): Response
     {
+        dump('test');
 
         $user = $this->security->getUser();
 
@@ -57,31 +59,31 @@ class CreateSerializedGroupController
             throw new BadRequestHttpException('Invalid JSON body data');
         }
 
-        $serializedGroup = $data['serializedGroup'] ?? null;
-        if (!$serializedGroup) {
-            throw new BadRequestHttpException('address is required');
+        $groupId = $data['groupId'] ?? null;
+        if (!$groupId) {
+            throw new BadRequestHttpException('groupId is required');
         }
-        $groupName = $data['name'] ?? null;
-        if (!$groupName) {
-            throw new BadRequestHttpException('address is required');
+        $memberId = $data['memberId'] ?? null;
+        if (!$memberId) {
+            throw new BadRequestHttpException('memberId is required');
         }
-        $ratchetTree = $data['ratchetTree'] ?? null;
-        if (!$ratchetTree) {
-            throw new BadRequestHttpException('address is required');
+        $welcomeMessageString = $data['welcomeMessage'] ?? null;
+        if (!$welcomeMessageString) {
+            throw new BadRequestHttpException('welcomeMessage is required');
         }
 
-        $group = new Group($groupName, $user, $ratchetTree);
 
-        $serializedUserGroup = new SerializedUserGroup($user, $serializedGroup, $group);
+        /** @var Group $group */
+        $group = $iriConverter->getResourceFromIri('/groups/'.$groupId);
+        /** @var User $member */
+        $member = $iriConverter->getResourceFromIri('/users/'.$memberId);
 
-        $this->entityManager->persist($group);
-        $this->entityManager->persist($serializedUserGroup);
+        $welcomeMessage = new WelcomeMessage($user, $group, $welcomeMessageString);
+
+        $this->entityManager->persist($welcomeMessage);
         $this->entityManager->flush();
 
-        $jsonContent = $this->serializer->serialize(new SerializedUserGroupDTO($serializedUserGroup), 'json');
-
-
-        return new Response($jsonContent, Response::HTTP_OK, ['Content-Type' => 'application/json']);
+        return new Response(null, Response::HTTP_OK, ['Content-Type' => 'application/json']);
 
 
     }

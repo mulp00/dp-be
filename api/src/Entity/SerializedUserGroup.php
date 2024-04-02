@@ -2,21 +2,11 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\OpenApi\Model;
-use App\Controller\SerializedUserGroup\CreateSerializedGroupController;
 use App\Repository\SerializedUserGroupRepository;
-use ArrayObject;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation as Serializer;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Uid\Uuid;
 
-#[ApiResource()
-
-]
 #[ORM\Entity(repositoryClass: SerializedUserGroupRepository::class)]
 class SerializedUserGroup
 {

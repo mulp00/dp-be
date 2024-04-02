@@ -10,6 +10,7 @@ use App\Controller\SerializedUserGroup\CreateSerializedGroupController;
 use App\Controller\SerializedUserGroup\GetSerializedUserGroupCollection;
 use App\Controller\User\GetUserByEmailController;
 use App\Controller\User\GetUserIdentityController;
+use App\Controller\WelcomeMessage\CreateWelcomeMessage;
 use App\Repository\UserRepository;
 use App\State\UserMasterKeyDoubleHasher;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -78,6 +79,9 @@ use ArrayObject;
                                         'name' => [
                                             'type' => 'string',
                                         ],
+                                        'ratchetTree' => [
+                                            'type' => 'string',
+                                        ],
                                     ]
                                 ]
                             ]
@@ -100,6 +104,34 @@ use ArrayObject;
             controller: GetUserByEmailController::class,
             read: false,
         ),
+        new Post(
+            uriTemplate: '/welcomeMessage',
+            controller: CreateWelcomeMessage::class,
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new ArrayObject([
+                            'application/ld+json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'groupId' => [
+                                            'type' => 'string',
+                                        ],
+                                        'memberId' => [
+                                            'type' => 'string',
+                                        ],
+                                        'welcomeMessage' => [
+                                            'type' => 'string',
+                                        ],
+                                    ]
+                                ]
+                            ]
+                        ]
+                    )
+                )
+            ),
+            read: false,
+        )
     ],
     normalizationContext: ['groups' => ['user:read', 'mfkdfpolicy:read']],
     denormalizationContext: ['groups' => ['user:create', 'user:update', 'mfkdfpolicy:read']],
@@ -152,17 +184,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $groups;
 
     #[ORM\Column(type: 'text')]
-    #[Groups(['user:create'])]
+    #[Groups(['user:create', 'user:identity'])]
     private ?string $keyPackage = null;
 
     #[ORM\OneToMany(mappedBy: 'creator', targetEntity: Group::class)]
     private Collection $createdGroups;
+
+    #[ORM\OneToMany(mappedBy: 'recipient', targetEntity: WelcomeMessage::class, orphanRemoval: true)]
+    private Collection $welcomeMessages;
 
     public function __construct()
     {
         $this->serializedUserGroups = new ArrayCollection();
         $this->groups = new ArrayCollection();
         $this->createdGroups = new ArrayCollection();
+        $this->welcomeMessages = new ArrayCollection();
     }
 
 
@@ -381,6 +417,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($createdGroup->getCreator() === $this) {
                 $createdGroup->setCreator(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, WelcomeMessage>
+     */
+    public function getWelcomeMessages(): Collection
+    {
+        return $this->welcomeMessages;
+    }
+
+    public function addWelcomeMessage(WelcomeMessage $welcomeMessage): static
+    {
+        if (!$this->welcomeMessages->contains($welcomeMessage)) {
+            $this->welcomeMessages->add($welcomeMessage);
+            $welcomeMessage->setRecipient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWelcomeMessage(WelcomeMessage $welcomeMessage): static
+    {
+        if ($this->welcomeMessages->removeElement($welcomeMessage)) {
+            // set the owning side to null (unless already changed)
+            if ($welcomeMessage->getRecipient() === $this) {
+                $welcomeMessage->setRecipient(null);
             }
         }
 

@@ -3,16 +3,18 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
 use App\Repository\GroupRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation as Serializer;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Uid\Uuid;
 
-#[ApiResource()]
+#[ApiResource(operations: [
+    new Get()
+])]
 #[ORM\Entity(repositoryClass: GroupRepository::class)]
 #[ORM\Table(name: '`group`')]
 class Group
@@ -21,12 +23,11 @@ class Group
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
-    #[Serializer\Groups(['group:create'])]
+    #[Serializer\Groups(['group:read', 'group:create', 'serializedUserGroup:create', 'serializedUserGroup:read'])]
     private Uuid $id;
 
-
     #[ORM\Column(length: 180)]
-    #[Groups(['group:create','group:read', 'serializedUserGroup:create'])]
+    #[Groups(['group:create', 'group:read', 'serializedUserGroup:create'])]
     private ?string $name = null;
 
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'groups')]
@@ -35,18 +36,23 @@ class Group
 
     #[ORM\ManyToOne(inversedBy: 'createdGroups')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['group:create','group:read', 'serializedUserGroup:create', 'serializedUserGroup:read'])]
+    #[Groups(['group:create', 'group:read', 'serializedUserGroup:create', 'serializedUserGroup:read'])]
     private ?User $creator = null;
+
+    #[ORM\Column(type: 'text')]
+    #[Groups(['group:create', 'group:read', 'serializedUserGroup:create', 'serializedUserGroup:read'])]
+    private ?string $ratchetTree = null;
 
     /**
      * @param string|null $name
      * @param User $creator
      */
-    public function __construct(?string $name, User $creator)
+    public function __construct(?string $name, User $creator, string $ratchetTree)
     {
         $this->name = $name;
         $this->users = new ArrayCollection([$creator]);
         $this->creator = $creator;
+        $this->ratchetTree = $ratchetTree;
     }
 
 
@@ -97,6 +103,18 @@ class Group
     public function setCreator(?User $creator): static
     {
         $this->creator = $creator;
+
+        return $this;
+    }
+
+    public function getRatchetTree(): ?string
+    {
+        return $this->ratchetTree;
+    }
+
+    public function setRatchetTree(string $ratchetTree): static
+    {
+        $this->ratchetTree = $ratchetTree;
 
         return $this;
     }

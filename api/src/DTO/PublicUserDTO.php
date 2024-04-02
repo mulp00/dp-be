@@ -6,6 +6,7 @@ use App\Entity\User;
 
 class PublicUserDTO
 {
+    public string $id;
     public string $email;
     public string $keyPackage;
 
@@ -14,8 +15,14 @@ class PublicUserDTO
      */
     public function __construct(User $user)
     {
+        $this->id = $user->getId();
         $this->email = $user->getEmail();
         $this->keyPackage = $user->getKeyPackage();
+    }
+
+    public function getId(): string
+    {
+        return $this->id;
     }
 
     public function getEmail(): string
