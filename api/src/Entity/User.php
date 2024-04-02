@@ -4,10 +4,13 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use App\Controller\Group\UpdateRatchetTreeController;
 use App\Controller\MFKDFPolicy\GetMFKDFByEmailController;
-use App\Controller\SerializedUserGroup\CreateSerializedGroupController;
+use App\Controller\SerializedUserGroup\CreateNewGroupController;
 use App\Controller\SerializedUserGroup\GetSerializedUserGroupCollection;
+use App\Controller\SerializedUserGroup\UpdateSerializedUserGroupController;
 use App\Controller\User\GetUserByEmailController;
 use App\Controller\User\GetUserIdentityController;
 use App\Controller\WelcomeMessage\CreateWelcomeMessage;
@@ -64,8 +67,8 @@ use ArrayObject;
             read: false
         ),
         new Post( // TODO presunout do SerializedUserGroup, nejak tam nefunguje vyuziti controlleru i pres read:false
-            uriTemplate: '/serializedGroup',
-            controller: CreateSerializedGroupController::class,
+            uriTemplate: '/newGroup',
+            controller: CreateNewGroupController::class,
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
                     content: new ArrayObject([
@@ -121,6 +124,56 @@ use ArrayObject;
                                             'type' => 'string',
                                         ],
                                         'welcomeMessage' => [
+                                            'type' => 'string',
+                                        ],
+                                    ]
+                                ]
+                            ]
+                        ]
+                    )
+                )
+            ),
+            read: false,
+        ),
+        new Patch(
+            uriTemplate: '/updateRatchetTree',
+            controller: UpdateRatchetTreeController::class,
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new ArrayObject([
+                            'application/ld+json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'groupId' => [
+                                            'type' => 'string',
+                                        ],
+                                        'ratchetTree' => [
+                                            'type' => 'string',
+                                        ],
+                                    ]
+                                ]
+                            ]
+                        ]
+                    )
+                )
+            ),
+            read: false,
+        ),
+        new Patch(
+            uriTemplate: '/updateSerializedUserGroup',
+            controller: UpdateSerializedUserGroupController::class,
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new ArrayObject([
+                            'application/ld+json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'serializedUserGroupId' => [
+                                            'type' => 'string',
+                                        ],
+                                        'serializedUserGroup' => [
                                             'type' => 'string',
                                         ],
                                     ]

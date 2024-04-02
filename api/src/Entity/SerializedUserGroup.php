@@ -2,11 +2,18 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
 use App\Repository\SerializedUserGroupRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation as Serializer;
 use Symfony\Component\Uid\Uuid;
 
+#[ApiResource(
+    operations: [
+        new Get()
+    ]
+)]
 #[ORM\Entity(repositoryClass: SerializedUserGroupRepository::class)]
 class SerializedUserGroup
 {
@@ -30,16 +37,21 @@ class SerializedUserGroup
     #[Serializer\Groups(['serializedUserGroup:read', 'serializedUserGroup:create'])]
     private ?Group $groupEntity = null;
 
+    #[ORM\Column]
+    private ?int $lastMessageSequenceNumber = null;
+
     /**
      * @param User|null $groupUser
      * @param string|null $serializedGroup
      * @param Group|null $groupEntity
+     * @param int $messageSequenceNumber
      */
-    public function __construct(?User $groupUser, ?string $serializedGroup, ?Group $groupEntity)
+    public function __construct(?User $groupUser, ?string $serializedGroup, ?Group $groupEntity, int $messageSequenceNumber)
     {
         $this->groupUser = $groupUser;
         $this->serializedGroup = $serializedGroup;
         $this->groupEntity = $groupEntity;
+        $this->lastMessageSequenceNumber = $messageSequenceNumber;
     }
 
 
@@ -80,6 +92,18 @@ class SerializedUserGroup
     public function setGroupEntity(?Group $groupEntity): static
     {
         $this->groupEntity = $groupEntity;
+
+        return $this;
+    }
+
+    public function getLastMessageSequenceNumber(): ?int
+    {
+        return $this->lastMessageSequenceNumber;
+    }
+
+    public function setLastMessageSequenceNumber(int $lastMessageSequenceNumber): static
+    {
+        $this->lastMessageSequenceNumber = $lastMessageSequenceNumber;
 
         return $this;
     }

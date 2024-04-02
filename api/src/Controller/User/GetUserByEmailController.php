@@ -54,9 +54,9 @@ class GetUserByEmailController
 
         $foundUsers = (new PublicUserGroupDTO($searchResult))->getUsers();
 
-        $jsonContent = $this->serializer->serialize($foundUsers, 'json');
+        $jsonContentResponse = $this->serializer->serialize($foundUsers, 'json');
 
-        return new Response($jsonContent, Response::HTTP_OK, ['Content-Type' => 'application/json']);
+        return new Response($jsonContentResponse, Response::HTTP_OK, ['Content-Type' => 'application/json']);
 
 
     }

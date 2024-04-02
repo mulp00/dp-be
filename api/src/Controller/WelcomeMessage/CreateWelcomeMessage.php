@@ -5,9 +5,12 @@ namespace App\Controller\WelcomeMessage;
 use ApiPlatform\Api\IriConverterInterface;
 use App\DTO\SerializedUserGroupDTO;
 use App\Entity\Group;
+use App\Entity\Message;
 use App\Entity\SerializedUserGroup;
 use App\Entity\User;
 use App\Entity\WelcomeMessage;
+use App\Repository\MessageRepository;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,25 +26,25 @@ class CreateWelcomeMessage
     private Security $security;
     private SerializerInterface $serializer;
     private EntityManagerInterface $entityManager;
-
+    private MessageRepository $messageRepository;
 
     /**
      * @param Security $security
      * @param SerializerInterface $serializer
      * @param EntityManagerInterface $entityManager
+     * @param MessageRepository $messageRepository
      */
-    public function __construct(Security $security, SerializerInterface $serializer, EntityManagerInterface $entityManager)
+    public function __construct(Security $security, SerializerInterface $serializer, EntityManagerInterface $entityManager, MessageRepository $messageRepository)
     {
         $this->security = $security;
         $this->serializer = $serializer;
         $this->entityManager = $entityManager;
+        $this->messageRepository = $messageRepository;
     }
 
 
     public function __invoke(Request $request, IriConverterInterface $iriConverter): Response
     {
-        dump('test');
-
         $user = $this->security->getUser();
 
         if (!$user) {
@@ -60,28 +63,36 @@ class CreateWelcomeMessage
         }
 
         $groupId = $data['groupId'] ?? null;
-        if (!$groupId) {
-            throw new BadRequestHttpException('groupId is required');
-        }
         $memberId = $data['memberId'] ?? null;
-        if (!$memberId) {
-            throw new BadRequestHttpException('memberId is required');
-        }
         $welcomeMessageString = $data['welcomeMessage'] ?? null;
-        if (!$welcomeMessageString) {
-            throw new BadRequestHttpException('welcomeMessage is required');
-        }
 
+        if (!$groupId || !$memberId || !$welcomeMessageString) {
+            throw new BadRequestHttpException('groupId, memberId and welcomeMessage are required');
+        }
 
         /** @var Group $group */
         $group = $iriConverter->getResourceFromIri('/groups/'.$groupId);
         /** @var User $member */
         $member = $iriConverter->getResourceFromIri('/users/'.$memberId);
 
-        $welcomeMessage = new WelcomeMessage($user, $group, $welcomeMessageString);
+        $lastMessageSequenceNumber = $this->messageRepository->findLatestMessageByGroupId($group->getId());
 
-        $this->entityManager->persist($welcomeMessage);
-        $this->entityManager->flush();
+        try {
+            $commitMessage = new Message($group, $lastMessageSequenceNumber + 1);
+            $welcomeMessage = new WelcomeMessage($member, $group, $welcomeMessageString, $commitMessage);
+            $group->addUser($member);
+            $this->entityManager->persist($commitMessage);
+            $this->entityManager->persist($welcomeMessage);
+            $this->entityManager->persist($group);
+            $this->entityManager->flush();
+        } catch (UniqueConstraintViolationException $e) {
+            // This exception is thrown if the unique constraint is violated
+            throw new BadRequestHttpException('A welcome message for this combination already exists.');
+        } catch (\Exception $e) {
+            // Catch other exceptions to handle unexpected errors
+            throw new BadRequestHttpException('An unexpected error occurred: ' . $e->getMessage());
+        }
+
 
         return new Response(null, Response::HTTP_OK, ['Content-Type' => 'application/json']);
 

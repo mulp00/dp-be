@@ -28,17 +28,24 @@ class WelcomeMessage
     #[ORM\Column(type: 'text')]
     private ?string $message = null;
 
+    #[ORM\OneToOne(inversedBy: 'welcomeMessage', cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Message $correspondingMessage = null;
+
     /**
      * @param User|null $recipient
      * @param Group|null $targetGroup
      * @param string|null $message
+     * @param Message|null $correspondingMessage
      */
-    public function __construct(?User $recipient, ?Group $targetGroup, ?string $message)
+    public function __construct(?User $recipient, ?Group $targetGroup, ?string $message, ?Message $correspondingMessage)
     {
         $this->recipient = $recipient;
         $this->targetGroup = $targetGroup;
         $this->message = $message;
+        $this->correspondingMessage = $correspondingMessage;
     }
+
 
     public function getId(): Uuid
     {
@@ -78,6 +85,18 @@ class WelcomeMessage
     public function setMessage(string $message): static
     {
         $this->message = $message;
+
+        return $this;
+    }
+
+    public function getCorrespondingMessage(): ?Message
+    {
+        return $this->correspondingMessage;
+    }
+
+    public function setCorrespondingMessage(Message $correspondingMessage): static
+    {
+        $this->correspondingMessage = $correspondingMessage;
 
         return $this;
     }

@@ -2,16 +2,12 @@
 
 namespace App\Controller\SerializedUserGroup;
 
-use ApiPlatform\Api\IriConverterInterface;
 use App\DTO\SerializedUserGroupDTO;
-use App\Entity\Group;
 use App\Entity\SerializedUserGroup;
 use App\Entity\User;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 #[AsController]
@@ -50,10 +46,10 @@ class GetSerializedUserGroupCollection
         }, $user->getSerializedUserGroups()->toArray()) ;
 
 
-        $jsonContent = $this->serializer->serialize($serializedUserGroups, 'json');
+        $jsonContentResponse = $this->serializer->serialize($serializedUserGroups, 'json');
 
 
-        return new Response($jsonContent, Response::HTTP_OK, ['Content-Type' => 'application/json']);
+        return new Response($jsonContentResponse, Response::HTTP_OK, ['Content-Type' => 'application/json']);
 
 
     }

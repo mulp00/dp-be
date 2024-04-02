@@ -43,6 +43,9 @@ class Group
     #[Groups(['group:create', 'group:read', 'serializedUserGroup:create', 'serializedUserGroup:read'])]
     private ?string $ratchetTree = null;
 
+    #[ORM\OneToMany(mappedBy: 'targetGroup', targetEntity: Message::class, orphanRemoval: true)]
+    private Collection $messages;
+
     /**
      * @param string|null $name
      * @param User $creator
@@ -53,6 +56,7 @@ class Group
         $this->users = new ArrayCollection([$creator]);
         $this->creator = $creator;
         $this->ratchetTree = $ratchetTree;
+        $this->messages = new ArrayCollection();
     }
 
 
@@ -115,6 +119,36 @@ class Group
     public function setRatchetTree(string $ratchetTree): static
     {
         $this->ratchetTree = $ratchetTree;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Message>
+     */
+    public function getMessages(): Collection
+    {
+        return $this->messages;
+    }
+
+    public function addMessage(Message $message): static
+    {
+        if (!$this->messages->contains($message)) {
+            $this->messages->add($message);
+            $message->setTargetGroup($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMessage(Message $message): static
+    {
+        if ($this->messages->removeElement($message)) {
+            // set the owning side to null (unless already changed)
+            if ($message->getTargetGroup() === $this) {
+                $message->setTargetGroup(null);
+            }
+        }
 
         return $this;
     }
