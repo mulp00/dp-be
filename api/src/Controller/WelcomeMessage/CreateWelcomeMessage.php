@@ -83,6 +83,7 @@ class CreateWelcomeMessage
             $group->addUser($member);
             $this->entityManager->persist($commitMessage);
             $this->entityManager->persist($welcomeMessage);
+            $this->entityManager->persist($member);
             $this->entityManager->persist($group);
             $this->entityManager->flush();
         } catch (UniqueConstraintViolationException $e) {

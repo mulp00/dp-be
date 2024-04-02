@@ -4,13 +4,13 @@ namespace App\Controller\MFKDFPolicy;
 
 use ApiPlatform\Api\IriConverterInterface;
 use App\Entity\MFKDFPolicy;
-use App\Repository\MFKDFPolicyRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-
+#[AsController]
 class GetMFKDFByEmailController extends AbstractController
 {
 

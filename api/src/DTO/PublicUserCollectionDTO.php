@@ -4,7 +4,7 @@ namespace App\DTO;
 
 use App\Entity\User;
 
-class PublicUserGroupDTO
+class PublicUserCollectionDTO
 {
 
     /**

@@ -1,42 +1,35 @@
 <?php
 
-namespace App\Controller\User;
+namespace App\Controller\Group;
 
-use App\DTO\PublicUserDTO;
-use App\DTO\PublicUserCollectionDTO;
-use App\DTO\SerializedUserGroupDTO;
-use App\Entity\SerializedUserGroup;
+use App\DTO\WelcomeMessageCollectionDTO;
 use App\Entity\User;
-use App\Repository\UserRepository;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\HttpFoundation\Request;
-
 
 #[AsController]
-class GetUserByEmailController
+class GetGroupsToJoin
 {
     private Security $security;
     private SerializerInterface $serializer;
-    private UserRepository $userRepository;
 
     /**
      * @param Security $security
      * @param SerializerInterface $serializer
-     * @param UserRepository $userRepository
      */
-    public function __construct(Security $security, SerializerInterface $serializer, UserRepository $userRepository)
+    public function __construct(Security $security, SerializerInterface $serializer)
     {
         $this->security = $security;
         $this->serializer = $serializer;
-        $this->userRepository = $userRepository;
     }
 
 
     public function __invoke(Request $request): Response
     {
+        dump("PICO");
 
         $user = $this->security->getUser();
 
@@ -48,17 +41,30 @@ class GetUserByEmailController
             throw new \RuntimeException('The authenticated user is not a valid \App\Entity\User instance.');
         }
 
-        $searchedEmail = $request->get('id');
+        $welcomeMessages = $user->getWelcomeMessages()->toArray();
+        dump($welcomeMessages);
 
-        $searchResult = $this->userRepository->findByPartialEmail($searchedEmail, 30);
+        $usersGroups = $user->getGroups()->toArray();
+        $groupsToJoin = [];
 
-        $foundUsers = (new PublicUserCollectionDTO($searchResult))->getUsers();
 
-        $jsonContentResponse = $this->serializer->serialize($foundUsers, 'json');
+        foreach ($welcomeMessages as $welcomeMessage){
+            // in case user was kicked before they could join then ignore the message
+            if(in_array($welcomeMessage->getTargetGroup(), $usersGroups)) {
+                if (!$welcomeMessage->isIsJoined()) {
+                    $groupsToJoin[] = $welcomeMessage;
+                }
+            }
+        }
+
+        $welcomeMessageCollectionDTO = new WelcomeMessageCollectionDTO($groupsToJoin);
+
+        $jsonContentResponse = $this->serializer->serialize($welcomeMessageCollectionDTO, 'json');
 
         return new Response($jsonContentResponse, Response::HTTP_OK, ['Content-Type' => 'application/json']);
 
 
     }
+
 
 }

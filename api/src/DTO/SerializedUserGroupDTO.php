@@ -28,7 +28,7 @@ class SerializedUserGroupDTO
         $this->groupId = $serializedUserGroup->getGroupEntity()->getId();
         $this->name = $serializedUserGroup->getGroupEntity()->getName();
         $this->serializedGroup = $serializedUserGroup->getSerializedGroup();
-        $this->users = (new PublicUserGroupDTO($serializedUserGroup->getGroupEntity()->getUsers()->toArray()))->getUsers();
+        $this->users = (new PublicUserCollectionDTO($serializedUserGroup->getGroupEntity()->getUsers()->toArray()))->getUsers();
         $this->creator = new PublicUserDTO($serializedUserGroup->getGroupEntity()->getCreator());
     }
 

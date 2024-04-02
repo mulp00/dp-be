@@ -28,9 +28,12 @@ class WelcomeMessage
     #[ORM\Column(type: 'text')]
     private ?string $message = null;
 
-    #[ORM\OneToOne(inversedBy: 'welcomeMessage', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne] // TODO mozna bude delat problemy
     #[ORM\JoinColumn(nullable: false)]
     private ?Message $correspondingMessage = null;
+
+    #[ORM\Column]
+    private ?bool $isJoined = null;
 
     /**
      * @param User|null $recipient
@@ -44,6 +47,7 @@ class WelcomeMessage
         $this->targetGroup = $targetGroup;
         $this->message = $message;
         $this->correspondingMessage = $correspondingMessage;
+        $this->isJoined = false;
     }
 
 
@@ -97,6 +101,18 @@ class WelcomeMessage
     public function setCorrespondingMessage(Message $correspondingMessage): static
     {
         $this->correspondingMessage = $correspondingMessage;
+
+        return $this;
+    }
+
+    public function isIsJoined(): ?bool
+    {
+        return $this->isJoined;
+    }
+
+    public function setIsJoined(bool $isJoined): static
+    {
+        $this->isJoined = $isJoined;
 
         return $this;
     }

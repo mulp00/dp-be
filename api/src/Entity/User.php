@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use App\Controller\Group\GetGroupsToJoin;
 use App\Controller\Group\UpdateRatchetTreeController;
 use App\Controller\MFKDFPolicy\GetMFKDFByEmailController;
 use App\Controller\SerializedUserGroup\CreateNewGroupController;
@@ -105,6 +106,11 @@ use ArrayObject;
         new Get(
             uriTemplate: '/getByEmail/{id}',
             controller: GetUserByEmailController::class,
+            read: false,
+        ),
+        new Get(
+            uriTemplate: '/getGroupsToJoin',
+            controller: GetGroupsToJoin::class,
             read: false,
         ),
         new Post(
@@ -243,7 +249,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'creator', targetEntity: Group::class)]
     private Collection $createdGroups;
 
-    #[ORM\OneToMany(mappedBy: 'recipient', targetEntity: WelcomeMessage::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'recipient', targetEntity: WelcomeMessage::class, fetch: 'EAGER', orphanRemoval: true)]
     private Collection $welcomeMessages;
 
     public function __construct()
