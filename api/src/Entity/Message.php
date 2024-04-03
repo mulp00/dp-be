@@ -20,16 +20,16 @@ class Message
     private ?Group $targetGroup = null;
 
     #[ORM\Column]
-    private ?int $sequenceNumber = null;
+    private ?int $epoch = null;
 
     /**
      * @param Group|null $targetGroup
-     * @param int|null $sequenceNumber
+     * @param int|null $epoch
      */
-    public function __construct(?Group $targetGroup, ?int $sequenceNumber)
+    public function __construct(?Group $targetGroup, ?int $epoch)
     {
         $this->targetGroup = $targetGroup;
-        $this->sequenceNumber = $sequenceNumber;
+        $this->epoch = $epoch;
     }
 
     public function getId(): Uuid
@@ -50,14 +50,14 @@ class Message
         return $this;
     }
 
-    public function getSequenceNumber(): ?int
+    public function getEpoch(): ?int
     {
-        return $this->sequenceNumber;
+        return $this->epoch;
     }
 
-    public function setSequenceNumber(int $sequenceNumber): static
+    public function setEpoch(int $epoch): static
     {
-        $this->sequenceNumber = $sequenceNumber;
+        $this->epoch = $epoch;
 
         return $this;
     }

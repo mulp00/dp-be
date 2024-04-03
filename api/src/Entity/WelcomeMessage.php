@@ -2,11 +2,13 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
 use App\Repository\WelcomeMessageRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-
+#[ApiResource(operations:[new Get()])]
 #[ORM\Entity(repositoryClass: WelcomeMessageRepository::class)]
 #[ORM\UniqueConstraint(name: "user_group_unique", columns: ["recipient_id", "target_group_id"])]
 class WelcomeMessage

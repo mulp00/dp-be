@@ -23,10 +23,10 @@ class MessageRepository extends ServiceEntityRepository
     }
 
     /**
-     * Finds the message with the highest sequence number for a given group UUID.
+     * Finds the message with the highest epoch number for a given group UUID.
      *
      * @param string $groupId The UUID of the group.
-     * @return Message|null The message with the highest sequence number or null if no message is found.
+     * @return Message|null The message with the highest epoch number or null if no message is found.
      * @throws NonUniqueResultException
      */
     public function findLatestMessageByGroupId(string $groupId): ?Message
@@ -34,7 +34,7 @@ class MessageRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('m');
         $qb->where('m.targetGroup = :groupId')
             ->setParameter('groupId', $groupId)
-            ->orderBy('m.sequenceNumber', 'DESC')
+            ->orderBy('m.epoch', 'DESC')
             ->setMaxResults(1);
 
         $query = $qb->getQuery();

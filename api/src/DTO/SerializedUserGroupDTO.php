@@ -13,6 +13,9 @@ class SerializedUserGroupDTO
     public string $name;
     public string $serializedGroup;
     public PublicUserDTO $creator;
+    public int $lastEpoch;
+    public int $epoch;
+
 
     /**
      * @var PublicUserDTO[]
@@ -30,6 +33,8 @@ class SerializedUserGroupDTO
         $this->serializedGroup = $serializedUserGroup->getSerializedGroup();
         $this->users = (new PublicUserCollectionDTO($serializedUserGroup->getGroupEntity()->getUsers()->toArray()))->getUsers();
         $this->creator = new PublicUserDTO($serializedUserGroup->getGroupEntity()->getCreator());
+        $this->lastEpoch = $serializedUserGroup->getLastEpoch();
+        $this->epoch = $serializedUserGroup->getGroupEntity()->getEpoch();
     }
 
     public function getGroupId(): Uuid
@@ -61,6 +66,11 @@ class SerializedUserGroupDTO
     public function getCreator(): PublicUserDTO
     {
         return $this->creator;
+    }
+
+    public function getLastEpoch(): int
+    {
+        return $this->lastEpoch;
     }
 
 

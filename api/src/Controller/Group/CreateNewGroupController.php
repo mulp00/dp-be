@@ -1,20 +1,18 @@
 <?php
 
-namespace App\Controller\SerializedUserGroup;
+namespace App\Controller\Group;
 
 use ApiPlatform\Api\IriConverterInterface;
 use App\DTO\SerializedUserGroupDTO;
 use App\Entity\Group;
 use App\Entity\SerializedUserGroup;
 use App\Entity\User;
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Exception\ORMException;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Attribute\AsController;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 #[AsController]

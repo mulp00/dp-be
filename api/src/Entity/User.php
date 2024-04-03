@@ -6,10 +6,12 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model;
+use App\Controller\Group\CreateNewGroupController;
 use App\Controller\Group\GetGroupsToJoin;
 use App\Controller\Group\UpdateRatchetTreeController;
 use App\Controller\MFKDFPolicy\GetMFKDFByEmailController;
-use App\Controller\SerializedUserGroup\CreateNewGroupController;
+use App\Controller\SerializedUserGroup\CreateSerializedUserGroupAfterJoinController;
 use App\Controller\SerializedUserGroup\GetSerializedUserGroupCollection;
 use App\Controller\SerializedUserGroup\UpdateSerializedUserGroupController;
 use App\Controller\User\GetUserByEmailController;
@@ -17,6 +19,7 @@ use App\Controller\User\GetUserIdentityController;
 use App\Controller\WelcomeMessage\CreateWelcomeMessage;
 use App\Repository\UserRepository;
 use App\State\UserMasterKeyDoubleHasher;
+use ArrayObject;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -25,11 +28,8 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation as Serializer;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
-use ApiPlatform\OpenApi\Model;
-use ArrayObject;
 
 
 #[ApiResource(
@@ -141,6 +141,37 @@ use ArrayObject;
             ),
             read: false,
         ),
+        new Post(
+            uriTemplate: '/createSerializedUserGroupAfterJoin',
+            controller: CreateSerializedUserGroupAfterJoinController::class,
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new ArrayObject([
+                            'application/ld+json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'groupId' => [
+                                            'type' => 'string',
+                                        ],
+                                        'serializedUserGroup' => [
+                                            'type' => 'string',
+                                        ],
+                                        'epoch' => [
+                                            'type' => 'string',
+                                        ],
+                                        'welcomeMessageId' => [
+                                            'type' => 'string',
+                                        ],
+                                    ]
+                                ]
+                            ]
+                        ]
+                    )
+                )
+            ),
+            read: false,
+        ),
         new Patch(
             uriTemplate: '/updateRatchetTree',
             controller: UpdateRatchetTreeController::class,
@@ -192,7 +223,7 @@ use ArrayObject;
             read: false,
         )
     ],
-    normalizationContext: ['groups' => ['user:read', 'mfkdfpolicy:read']],
+    normalizationContext: ['groups' => ['mfkdfpolicy:read']],
     denormalizationContext: ['groups' => ['user:create', 'user:update', 'mfkdfpolicy:read']],
 )]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -204,11 +235,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
-    #[Serializer\Groups(['user:read'])]
-    private Uuid $id;
+     private Uuid $id;
 
     #[ORM\Column(length: 180)]
-    #[Groups(['user:read', 'user:create', 'user:update', 'userCollection:read', 'serializedUserGroup:create', 'user:identity'])]
+    #[Groups([  'user:create', 'user:update', 'userCollection:read', 'serializedUserGroup:create', 'user:identity'])]
     private ?string $email = null;
 
     /**
@@ -232,7 +262,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?MFKDFPolicy $mfkdfpolicy = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
-    #[Groups(['user:create', 'user:update', 'user:read', 'user:identity'])]
+    #[Groups(['user:create', 'user:update', 'user:identity'])]
     private ?string $serializedIdentity = null;
 
     #[ORM\OneToMany(mappedBy: 'groupUser', targetEntity: SerializedUserGroup::class, orphanRemoval: true)]
@@ -251,6 +281,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\OneToMany(mappedBy: 'recipient', targetEntity: WelcomeMessage::class, fetch: 'EAGER', orphanRemoval: true)]
     private Collection $welcomeMessages;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    #[Groups(['user:create', 'user:update', 'user:identity'])]
+    private ?string $keyStore = null;
 
     public function __construct()
     {
@@ -508,6 +542,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $welcomeMessage->setRecipient(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getKeyStore(): ?string
+    {
+        return $this->keyStore;
+    }
+
+    public function setKeyStore(?string $keyStore): static
+    {
+        $this->keyStore = $keyStore;
 
         return $this;
     }

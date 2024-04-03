@@ -30,7 +30,7 @@ class Group
     #[Groups(['group:create', 'group:read', 'serializedUserGroup:create'])]
     private ?string $name = null;
 
-    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'groups')]
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'groups', fetch: 'EAGER')]
     #[Serializer\Groups(['group:read', 'group:create', 'serializedUserGroup:create', 'serializedUserGroup:read'])]
     private Collection $users;
 
@@ -46,9 +46,13 @@ class Group
     #[ORM\OneToMany(mappedBy: 'targetGroup', targetEntity: Message::class, orphanRemoval: true)]
     private Collection $messages;
 
+    #[ORM\Column]
+    private ?int $epoch = null;
+
     /**
      * @param string|null $name
      * @param User $creator
+     * @param string $ratchetTree
      */
     public function __construct(?string $name, User $creator, string $ratchetTree)
     {
@@ -57,6 +61,7 @@ class Group
         $this->creator = $creator;
         $this->ratchetTree = $ratchetTree;
         $this->messages = new ArrayCollection();
+        $this->epoch = 1;
     }
 
 
@@ -152,6 +157,18 @@ class Group
 
         return $this;
     }
+
+    public function getEpoch(): ?int
+    {
+        return $this->epoch;
+    }
+
+    public function setEpoch(?int $epoch): void
+    {
+        $this->epoch = $epoch;
+    }
+
+
 
 
 }

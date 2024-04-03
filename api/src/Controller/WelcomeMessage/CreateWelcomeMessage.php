@@ -75,10 +75,10 @@ class CreateWelcomeMessage
         /** @var User $member */
         $member = $iriConverter->getResourceFromIri('/users/'.$memberId);
 
-        $lastMessageSequenceNumber = $this->messageRepository->findLatestMessageByGroupId($group->getId());
+        $lastMessageEpochNumber = $this->messageRepository->findLatestMessageByGroupId($group->getId());
 
         try {
-            $commitMessage = new Message($group, $lastMessageSequenceNumber + 1);
+            $commitMessage = new Message($group, $lastMessageEpochNumber + 1);
             $welcomeMessage = new WelcomeMessage($member, $group, $welcomeMessageString, $commitMessage);
             $group->addUser($member);
             $this->entityManager->persist($commitMessage);

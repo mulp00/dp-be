@@ -29,7 +29,6 @@ class GetGroupsToJoin
 
     public function __invoke(Request $request): Response
     {
-        dump("PICO");
 
         $user = $this->security->getUser();
 
@@ -42,7 +41,6 @@ class GetGroupsToJoin
         }
 
         $welcomeMessages = $user->getWelcomeMessages()->toArray();
-        dump($welcomeMessages);
 
         $usersGroups = $user->getGroups()->toArray();
         $groupsToJoin = [];

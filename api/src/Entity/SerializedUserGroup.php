@@ -38,20 +38,20 @@ class SerializedUserGroup
     private ?Group $groupEntity = null;
 
     #[ORM\Column]
-    private ?int $lastMessageSequenceNumber = null;
+    private ?int $lastEpoch = null;
 
     /**
      * @param User|null $groupUser
      * @param string|null $serializedGroup
      * @param Group|null $groupEntity
-     * @param int $messageSequenceNumber
+     * @param int $messageEpoch
      */
-    public function __construct(?User $groupUser, ?string $serializedGroup, ?Group $groupEntity, int $messageSequenceNumber)
+    public function __construct(?User $groupUser, ?string $serializedGroup, ?Group $groupEntity, int $messageEpoch)
     {
         $this->groupUser = $groupUser;
         $this->serializedGroup = $serializedGroup;
         $this->groupEntity = $groupEntity;
-        $this->lastMessageSequenceNumber = $messageSequenceNumber;
+        $this->lastEpoch = $messageEpoch;
     }
 
 
@@ -96,14 +96,14 @@ class SerializedUserGroup
         return $this;
     }
 
-    public function getLastMessageSequenceNumber(): ?int
+    public function getLastEpoch(): ?int
     {
-        return $this->lastMessageSequenceNumber;
+        return $this->lastEpoch;
     }
 
-    public function setLastMessageSequenceNumber(int $lastMessageSequenceNumber): static
+    public function setLastEpoch(int $lastEpoch): static
     {
-        $this->lastMessageSequenceNumber = $lastMessageSequenceNumber;
+        $this->lastEpoch = $lastEpoch;
 
         return $this;
     }
