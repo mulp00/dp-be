@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\MessageRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -22,15 +23,21 @@ class Message
     #[ORM\Column]
     private ?int $epoch = null;
 
+    #[ORM\Column(type: 'text')]
+    private ?string $message = null;
+
     /**
      * @param Group|null $targetGroup
      * @param int|null $epoch
+     * @param string|null $message
      */
-    public function __construct(?Group $targetGroup, ?int $epoch)
+    public function __construct(?Group $targetGroup, ?int $epoch, ?string $message)
     {
         $this->targetGroup = $targetGroup;
         $this->epoch = $epoch;
+        $this->message = $message;
     }
+
 
     public function getId(): Uuid
     {
@@ -58,6 +65,18 @@ class Message
     public function setEpoch(int $epoch): static
     {
         $this->epoch = $epoch;
+
+        return $this;
+    }
+
+    public function getMessage(): ?string
+    {
+        return $this->message;
+    }
+
+    public function setMessage(string $message): static
+    {
+        $this->message = $message;
 
         return $this;
     }

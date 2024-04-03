@@ -20,7 +20,7 @@ class WelcomeMessageDTO
     {
         $this->welcomeMessageId = $welcomeMessage->getId();
         $this->message = $welcomeMessage->getMessage();
-        $this->ratchetTree = $welcomeMessage->getTargetGroup()->getRatchetTree();
+        $this->ratchetTree = $welcomeMessage->getRatchetTree();
         $this->epoch = $welcomeMessage->getCorrespondingMessage()->getEpoch();
         $this->groupId = $welcomeMessage->getTargetGroup()->getId();
     }

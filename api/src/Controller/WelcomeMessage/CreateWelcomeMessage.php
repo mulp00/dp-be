@@ -65,6 +65,8 @@ class CreateWelcomeMessage
         $groupId = $data['groupId'] ?? null;
         $memberId = $data['memberId'] ?? null;
         $welcomeMessageString = $data['welcomeMessage'] ?? null;
+        $commitMessageContents = $data['commitMessage'] ?? null;
+        $ratchetTree = $data['ratchetTree'] ?? null;
 
         if (!$groupId || !$memberId || !$welcomeMessageString) {
             throw new BadRequestHttpException('groupId, memberId and welcomeMessage are required');
@@ -75,12 +77,15 @@ class CreateWelcomeMessage
         /** @var User $member */
         $member = $iriConverter->getResourceFromIri('/users/'.$memberId);
 
-        $lastMessageEpochNumber = $this->messageRepository->findLatestMessageByGroupId($group->getId());
+        $latestMessage = $this->messageRepository->findLatestMessageByGroupId($group->getId());
+        $lastMessageEpochNumber = $latestMessage ? $latestMessage->getEpoch() : 1;
+        dump($lastMessageEpochNumber);
 
         try {
-            $commitMessage = new Message($group, $lastMessageEpochNumber + 1);
-            $welcomeMessage = new WelcomeMessage($member, $group, $welcomeMessageString, $commitMessage);
+            $commitMessage = new Message($group, $lastMessageEpochNumber + 1, $commitMessageContents);
+            $welcomeMessage = new WelcomeMessage($member, $group, $welcomeMessageString, $commitMessage, $ratchetTree);
             $group->addUser($member);
+            $group->addEpoch();
             $this->entityManager->persist($commitMessage);
             $this->entityManager->persist($welcomeMessage);
             $this->entityManager->persist($member);

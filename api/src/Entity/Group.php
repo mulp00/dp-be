@@ -39,10 +39,6 @@ class Group
     #[Groups(['group:create', 'group:read', 'serializedUserGroup:create', 'serializedUserGroup:read'])]
     private ?User $creator = null;
 
-    #[ORM\Column(type: 'text')]
-    #[Groups(['group:create', 'group:read', 'serializedUserGroup:create', 'serializedUserGroup:read'])]
-    private ?string $ratchetTree = null;
-
     #[ORM\OneToMany(mappedBy: 'targetGroup', targetEntity: Message::class, orphanRemoval: true)]
     private Collection $messages;
 
@@ -52,14 +48,12 @@ class Group
     /**
      * @param string|null $name
      * @param User $creator
-     * @param string $ratchetTree
      */
-    public function __construct(?string $name, User $creator, string $ratchetTree)
+    public function __construct(?string $name, User $creator)
     {
         $this->name = $name;
         $this->users = new ArrayCollection([$creator]);
         $this->creator = $creator;
-        $this->ratchetTree = $ratchetTree;
         $this->messages = new ArrayCollection();
         $this->epoch = 1;
     }
@@ -116,17 +110,6 @@ class Group
         return $this;
     }
 
-    public function getRatchetTree(): ?string
-    {
-        return $this->ratchetTree;
-    }
-
-    public function setRatchetTree(string $ratchetTree): static
-    {
-        $this->ratchetTree = $ratchetTree;
-
-        return $this;
-    }
 
     /**
      * @return Collection<int, Message>
@@ -166,6 +149,11 @@ class Group
     public function setEpoch(?int $epoch): void
     {
         $this->epoch = $epoch;
+    }
+
+    public function addEpoch(): void
+    {
+        $this->epoch = $this->epoch +1;
     }
 
 

@@ -62,6 +62,10 @@ class UpdateSerializedUserGroupController
         if (!$serializedUserGroupContents) {
             throw new BadRequestHttpException('serializedUserGroup is required');
         }
+        $epoch = $data['epoch'] ?? null;
+        if (!$epoch) {
+            throw new BadRequestHttpException('epoch is required');
+        }
 
         /** @var SerializedUserGroup $serializedUserGroup */
         $serializedUserGroup = $iriConverter->getResourceFromIri('/serialized_user_groups/' . $serializedUserGroupId);
@@ -71,6 +75,7 @@ class UpdateSerializedUserGroupController
         }
 
         $serializedUserGroup->setSerializedGroup($serializedUserGroupContents);
+        $serializedUserGroup->setLastEpoch($epoch);
 
         $this->entityManager->persist($serializedUserGroup);
         $this->entityManager->flush();

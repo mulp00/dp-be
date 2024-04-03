@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use App\Repository\WelcomeMessageRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Uid\Uuid;
 
 #[ApiResource(operations:[new Get()])]
@@ -34,6 +35,10 @@ class WelcomeMessage
     #[ORM\JoinColumn(nullable: false)]
     private ?Message $correspondingMessage = null;
 
+    #[ORM\Column(type: 'text')]
+    #[Groups(['group:create', 'group:read', 'serializedUserGroup:create', 'serializedUserGroup:read'])]
+    private ?string $ratchetTree = null;
+
     #[ORM\Column]
     private ?bool $isJoined = null;
 
@@ -42,13 +47,15 @@ class WelcomeMessage
      * @param Group|null $targetGroup
      * @param string|null $message
      * @param Message|null $correspondingMessage
+     * @param string|null $ratchetTree
      */
-    public function __construct(?User $recipient, ?Group $targetGroup, ?string $message, ?Message $correspondingMessage)
+    public function __construct(?User $recipient, ?Group $targetGroup, ?string $message, ?Message $correspondingMessage, ?string $ratchetTree)
     {
         $this->recipient = $recipient;
         $this->targetGroup = $targetGroup;
         $this->message = $message;
         $this->correspondingMessage = $correspondingMessage;
+        $this->ratchetTree = $ratchetTree;
         $this->isJoined = false;
     }
 
@@ -117,5 +124,15 @@ class WelcomeMessage
         $this->isJoined = $isJoined;
 
         return $this;
+    }
+
+    public function getRatchetTree(): ?string
+    {
+        return $this->ratchetTree;
+    }
+
+    public function setRatchetTree(?string $ratchetTree): void
+    {
+        $this->ratchetTree = $ratchetTree;
     }
 }

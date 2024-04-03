@@ -42,6 +42,27 @@ class MessageRepository extends ServiceEntityRepository
         return $query->getOneOrNullResult();
     }
 
+    /**
+     * Finds messages with an epoch number greater than the specified epoch for a given group UUID.
+     *
+     * @param string $groupId The UUID of the group.
+     * @param int $epoch The epoch number to compare against.
+     * @return Message[] The messages with an epoch number greater than the specified epoch, sorted from lowest to highest epoch.
+     */
+    public function findMessagesByGroupIdWithMinEpoch(string $groupId, int $epoch): array
+    {
+        $qb = $this->createQueryBuilder('m');
+        $qb->where('m.targetGroup = :groupId')
+            ->andWhere('m.epoch > :epoch')
+            ->setParameter('groupId', $groupId)
+            ->setParameter('epoch', $epoch)
+            ->orderBy('m.epoch', 'ASC');
+
+        $query = $qb->getQuery();
+
+        return $query->getResult();
+    }
+
     //    /**
     //     * @return Message[] Returns an array of Message objects
     //     */

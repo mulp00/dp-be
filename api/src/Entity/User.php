@@ -10,12 +10,14 @@ use ApiPlatform\OpenApi\Model;
 use App\Controller\Group\CreateNewGroupController;
 use App\Controller\Group\GetGroupsToJoin;
 use App\Controller\Group\UpdateRatchetTreeController;
+use App\Controller\Message\GetMessagesController;
 use App\Controller\MFKDFPolicy\GetMFKDFByEmailController;
 use App\Controller\SerializedUserGroup\CreateSerializedUserGroupAfterJoinController;
 use App\Controller\SerializedUserGroup\GetSerializedUserGroupCollection;
 use App\Controller\SerializedUserGroup\UpdateSerializedUserGroupController;
 use App\Controller\User\GetUserByEmailController;
 use App\Controller\User\GetUserIdentityController;
+use App\Controller\User\PatchKeyStoreController;
 use App\Controller\WelcomeMessage\CreateWelcomeMessage;
 use App\Repository\UserRepository;
 use App\State\UserMasterKeyDoubleHasher;
@@ -114,6 +116,31 @@ use Symfony\Component\Validator\Constraints as Assert;
             read: false,
         ),
         new Post(
+            uriTemplate: '/getCommitMessages',
+            controller: GetMessagesController::class,
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new ArrayObject([
+                            'application/ld+json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'groupId' => [
+                                            'type' => 'string',
+                                        ],
+                                        'epoch' => [
+                                            'type' => 'string',
+                                        ],
+                                    ]
+                                ]
+                            ]
+                        ]
+                    )
+                )
+            ),
+            read: false,
+        ),
+        new Post(
             uriTemplate: '/welcomeMessage',
             controller: CreateWelcomeMessage::class,
             openapi: new Model\Operation(
@@ -130,6 +157,12 @@ use Symfony\Component\Validator\Constraints as Assert;
                                             'type' => 'string',
                                         ],
                                         'welcomeMessage' => [
+                                            'type' => 'string',
+                                        ],
+                                        'commitMessage' => [
+                                            'type' => 'string',
+                                        ],
+                                        'ratchetTree' => [
                                             'type' => 'string',
                                         ],
                                     ]
@@ -211,6 +244,31 @@ use Symfony\Component\Validator\Constraints as Assert;
                                             'type' => 'string',
                                         ],
                                         'serializedUserGroup' => [
+                                            'type' => 'string',
+                                        ],
+                                        'epoch' => [
+                                            'type' => 'string',
+                                        ],
+                                    ]
+                                ]
+                            ]
+                        ]
+                    )
+                )
+            ),
+            read: false,
+        ),
+        new Patch(
+            uriTemplate: '/updateKeyStore',
+            controller: PatchKeyStoreController::class,
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new ArrayObject([
+                            'application/ld+json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'keyStore' => [
                                             'type' => 'string',
                                         ],
                                     ]
