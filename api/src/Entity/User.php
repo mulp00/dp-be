@@ -20,6 +20,7 @@ use App\Controller\SerializedUserGroup\UpdateSerializedUserGroupController;
 use App\Controller\User\GetUserByEmailController;
 use App\Controller\User\GetUserIdentityController;
 use App\Controller\User\PatchKeyStoreController;
+use App\Controller\User\UpdateKeyPackageController;
 use App\Controller\WelcomeMessage\CreateWelcomeMessage;
 use App\Repository\UserRepository;
 use App\State\UserMasterKeyDoubleHasher;
@@ -271,7 +272,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
                     content: new ArrayObject([
-                            'application/ld+json' => [
+                            'application/merge-patch+json' => [
                                 'schema' => [
                                     'type' => 'object',
                                     'properties' => [
@@ -296,7 +297,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
                     content: new ArrayObject([
-                            'application/ld+json' => [
+                            'application/merge-patch+json' => [
                                 'schema' => [
                                     'type' => 'object',
                                     'properties' => [
@@ -324,11 +325,33 @@ use Symfony\Component\Validator\Constraints as Assert;
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
                     content: new ArrayObject([
-                            'application/ld+json' => [
+                            'application/merge-patch+json' => [
                                 'schema' => [
                                     'type' => 'object',
                                     'properties' => [
                                         'keyStore' => [
+                                            'type' => 'string',
+                                        ],
+                                    ]
+                                ]
+                            ]
+                        ]
+                    )
+                )
+            ),
+            read: false,
+        ),
+        new Patch(
+            uriTemplate: '/updateKeyPackage',
+            controller: UpdateKeyPackageController::class,
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new ArrayObject([
+                            'application/merge-patch+json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'keyPackage' => [
                                             'type' => 'string',
                                         ],
                                     ]
