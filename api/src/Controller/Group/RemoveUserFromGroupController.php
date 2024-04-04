@@ -1,43 +1,34 @@
 <?php
 
-namespace App\Controller\WelcomeMessage;
+namespace App\Controller\Group;
 
 use ApiPlatform\Api\IriConverterInterface;
-use App\DTO\SerializedUserGroupDTO;
 use App\Entity\Group;
 use App\Entity\Message;
-use App\Entity\SerializedUserGroup;
 use App\Entity\User;
-use App\Entity\WelcomeMessage;
 use App\Repository\MessageRepository;
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Serializer\SerializerInterface;
-
 
 #[AsController]
-class CreateWelcomeMessage
+class RemoveUserFromGroupController
 {
     private Security $security;
-    private SerializerInterface $serializer;
     private EntityManagerInterface $entityManager;
     private MessageRepository $messageRepository;
 
     /**
      * @param Security $security
-     * @param SerializerInterface $serializer
      * @param EntityManagerInterface $entityManager
      * @param MessageRepository $messageRepository
      */
-    public function __construct(Security $security, SerializerInterface $serializer, EntityManagerInterface $entityManager, MessageRepository $messageRepository)
+    public function __construct(Security $security, EntityManagerInterface $entityManager, MessageRepository $messageRepository)
     {
         $this->security = $security;
-        $this->serializer = $serializer;
         $this->entityManager = $entityManager;
         $this->messageRepository = $messageRepository;
     }
@@ -62,45 +53,47 @@ class CreateWelcomeMessage
             throw new BadRequestHttpException('Invalid JSON body data');
         }
 
+        $message = $data['message'] ?? null;
         $groupId = $data['groupId'] ?? null;
-        $memberId = $data['memberId'] ?? null;
-        $welcomeMessageString = $data['welcomeMessage'] ?? null;
-        $commitMessageContents = $data['commitMessage'] ?? null;
-        $ratchetTree = $data['ratchetTree'] ?? null;
+        $targetUserId = $data['userId'] ?? null;
+        $postedEpoch = $data['epoch'] ?? null;
 
-        if (!$groupId || !$memberId || !$welcomeMessageString) {
-            throw new BadRequestHttpException('groupId, memberId and welcomeMessage are required');
+        if (!$message || !$groupId || !$postedEpoch) {
+            throw new BadRequestHttpException('message, groupId and epoch are required');
         }
 
         /** @var Group $group */
         $group = $iriConverter->getResourceFromIri('/groups/'.$groupId);
-        /** @var User $member */
-        $member = $iriConverter->getResourceFromIri('/users/'.$memberId);
+        /** @var User $removedUser */
+        $removedUser = $iriConverter->getResourceFromIri('/users/'.$targetUserId);
 
         $latestMessage = $this->messageRepository->findLatestMessageByGroupId($group->getId());
         $lastMessageEpochNumber = $latestMessage ? $latestMessage->getEpoch() : 1;
 
+        if ($postedEpoch !== $lastMessageEpochNumber) {
+            throw new BadRequestHttpException('Invalid epoch');
+        }
+
         try {
-            $commitMessage = new Message($group, $lastMessageEpochNumber + 1, $commitMessageContents);
-            $welcomeMessage = new WelcomeMessage($member, $group, $welcomeMessageString, $commitMessage, $ratchetTree);
-            $group->addUser($member);
-            $group->addEpoch();
+
+            $removedUserSerializedUserGroup = $removedUser->getSerializedUserGroupByGroup($group);
+            $removedUser->removeSerializedUserGroup($removedUserSerializedUserGroup);
+            $removedUser->removeGroup($group);
+
+            $commitMessage = new Message($group, $postedEpoch, $message);
+            $group->removeUser($removedUser);
+
             $this->entityManager->persist($commitMessage);
-            $this->entityManager->persist($welcomeMessage);
-            $this->entityManager->persist($member);
             $this->entityManager->persist($group);
+            $this->entityManager->persist($removedUser);
             $this->entityManager->flush();
-        } catch (UniqueConstraintViolationException $e) {
-            // This exception is thrown if the unique constraint is violated
-            throw new BadRequestHttpException('A welcome message for this combination already exists.');
+
         } catch (\Exception $e) {
             // Catch other exceptions to handle unexpected errors
             throw new BadRequestHttpException('An unexpected error occurred: ' . $e->getMessage());
         }
 
-
         return new Response(null, Response::HTTP_OK, ['Content-Type' => 'application/json']);
-
 
     }
 }

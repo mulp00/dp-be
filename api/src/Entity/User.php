@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use App\Controller\Group\CreateNewGroupController;
 use App\Controller\Group\GetGroupsToJoin;
+use App\Controller\Group\RemoveUserFromGroupController;
 use App\Controller\Group\UpdateRatchetTreeController;
 use App\Controller\Message\GetMessagesController;
 use App\Controller\MFKDFPolicy\GetMFKDFByEmailController;
@@ -24,11 +25,9 @@ use App\State\UserMasterKeyDoubleHasher;
 use ArrayObject;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Serializer\Annotation as Serializer;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -36,6 +35,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     operations: [
+        new Get(),
         new Get(normalizationContext: ['groups' => ['tst']]),
         new Post(
             uriTemplate: '/auth/register',
@@ -163,6 +163,37 @@ use Symfony\Component\Validator\Constraints as Assert;
                                             'type' => 'string',
                                         ],
                                         'ratchetTree' => [
+                                            'type' => 'string',
+                                        ],
+                                    ]
+                                ]
+                            ]
+                        ]
+                    )
+                )
+            ),
+            read: false,
+        ),
+        new Post(
+            uriTemplate: '/commitMessage',
+            controller: RemoveUserFromGroupController::class,
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new ArrayObject([
+                            'application/ld+json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'message' => [
+                                            'type' => 'string',
+                                        ],
+                                        'groupId' => [
+                                            'type' => 'string',
+                                        ],
+                                        'userId' => [
+                                            'type' => 'string',
+                                        ],
+                                        'epoch' => [
                                             'type' => 'string',
                                         ],
                                     ]
@@ -350,6 +381,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->groups = new ArrayCollection();
         $this->createdGroups = new ArrayCollection();
         $this->welcomeMessages = new ArrayCollection();
+    }
+
+    public function getSerializedUserGroupByGroup(Group $group): ?SerializedUserGroup
+    {
+
+        /** @var SerializedUserGroup $serializedUserGroup */
+        foreach ($this->serializedUserGroups as $serializedUserGroup)
+        {
+            if($serializedUserGroup->getGroupEntity() === $group){
+                return $serializedUserGroup;
+            }
+        }
+        return null;
     }
 
 

@@ -11,7 +11,7 @@ use Symfony\Component\Uid\Uuid;
 
 #[ApiResource(operations:[new Get()])]
 #[ORM\Entity(repositoryClass: WelcomeMessageRepository::class)]
-#[ORM\UniqueConstraint(name: "user_group_unique", columns: ["recipient_id", "target_group_id"])]
+#[ORM\UniqueConstraint(name: "user_group_unique", columns: ["recipient_id", "target_group_id", "message"])]
 class WelcomeMessage
 {
     #[ORM\Id]
@@ -28,7 +28,7 @@ class WelcomeMessage
     #[ORM\JoinColumn(name: 'target_group_id', nullable: false)]
     private ?Group $targetGroup = null;
 
-    #[ORM\Column(type: 'text')]
+    #[ORM\Column(name: 'message', type: 'text')]
     private ?string $message = null;
 
     #[ORM\OneToOne] // TODO mozna bude delat problemy
