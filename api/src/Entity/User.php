@@ -12,6 +12,7 @@ use App\Controller\Group\GetGroupsToJoin;
 use App\Controller\Group\LeaveGroupController;
 use App\Controller\Group\RemoveUserFromGroupController;
 use App\Controller\Group\UpdateRatchetTreeController;
+use App\Controller\Message\CreateGeneralCommitMessageController;
 use App\Controller\Message\GetMessagesController;
 use App\Controller\MFKDFPolicy\GetMFKDFByEmailController;
 use App\Controller\SerializedUserGroup\CreateSerializedUserGroupAfterJoinController;
@@ -193,6 +194,34 @@ use Symfony\Component\Validator\Constraints as Assert;
                                             'type' => 'string',
                                         ],
                                         'userId' => [
+                                            'type' => 'string',
+                                        ],
+                                        'epoch' => [
+                                            'type' => 'string',
+                                        ],
+                                    ]
+                                ]
+                            ]
+                        ]
+                    )
+                )
+            ),
+            read: false,
+        ),
+        new Post(
+            uriTemplate: '/createGeneralCommitMessage',
+            controller: CreateGeneralCommitMessageController::class,
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new ArrayObject([
+                            'application/ld+json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'message' => [
+                                            'type' => 'string',
+                                        ],
+                                        'groupId' => [
                                             'type' => 'string',
                                         ],
                                         'epoch' => [
