@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Controller\Group;
-
 use ApiPlatform\Api\IriConverterInterface;
 use App\Entity\Group;
 use App\Entity\Message;
@@ -15,7 +14,7 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 #[AsController]
-class RemoveUserFromGroupController
+class LeaveGroupController
 {
     private Security $security;
     private EntityManagerInterface $entityManager;
@@ -32,8 +31,6 @@ class RemoveUserFromGroupController
         $this->entityManager = $entityManager;
         $this->messageRepository = $messageRepository;
     }
-
-
     public function __invoke(Request $request, IriConverterInterface $iriConverter): Response
     {
         $user = $this->security->getUser();
@@ -55,17 +52,14 @@ class RemoveUserFromGroupController
 
         $message = $data['message'] ?? null;
         $groupId = $data['groupId'] ?? null;
-        $targetUserId = $data['userId'] ?? null;
         $postedEpoch = $data['epoch'] ?? null;
 
-        if (!$message || !$groupId || !$postedEpoch || $targetUserId) {
-            throw new BadRequestHttpException('message, groupId, epoch and targetUserId are required');
+        if (!$message || !$groupId || !$postedEpoch) {
+            throw new BadRequestHttpException('message, groupId and epoch are required');
         }
 
         /** @var Group $group */
         $group = $iriConverter->getResourceFromIri('/groups/'.$groupId);
-        /** @var User $removedUser */
-        $removedUser = $iriConverter->getResourceFromIri('/users/'.$targetUserId);
 
         $latestMessage = $this->messageRepository->findLatestMessageByGroupId($group->getId());
         $lastMessageEpochNumber = $latestMessage ? $latestMessage->getEpoch() : 1;
@@ -76,17 +70,17 @@ class RemoveUserFromGroupController
 
         try {
 
-            $removedUserSerializedUserGroup = $removedUser->getSerializedUserGroupByGroup($group);
-            $removedUser->removeSerializedUserGroup($removedUserSerializedUserGroup);
-            $removedUser->removeGroup($group);
+            $removedUserSerializedUserGroup = $user->getSerializedUserGroupByGroup($group);
+            $user->removeSerializedUserGroup($removedUserSerializedUserGroup);
+            $user->removeGroup($group);
 
             $commitMessage = new Message($group, $postedEpoch + 1, $message);
             $group->addEpoch();
-            $group->removeUser($removedUser);
+            $group->removeUser($user);
 
             $this->entityManager->persist($commitMessage);
             $this->entityManager->persist($group);
-            $this->entityManager->persist($removedUser);
+            $this->entityManager->persist($user);
             $this->entityManager->flush();
 
         } catch (\Exception $e) {

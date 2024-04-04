@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use App\Controller\Group\CreateNewGroupController;
 use App\Controller\Group\GetGroupsToJoin;
+use App\Controller\Group\LeaveGroupController;
 use App\Controller\Group\RemoveUserFromGroupController;
 use App\Controller\Group\UpdateRatchetTreeController;
 use App\Controller\Message\GetMessagesController;
@@ -69,7 +70,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             normalizationContext: ['groups' => ['user:identity']],
             read: false
         ),
-        new Post( // TODO presunout do SerializedUserGroup, nejak tam nefunguje vyuziti controlleru i pres read:false
+        new Post(
             uriTemplate: '/newGroup',
             controller: CreateNewGroupController::class,
             openapi: new Model\Operation(
@@ -175,7 +176,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             read: false,
         ),
         new Post(
-            uriTemplate: '/commitMessage',
+            uriTemplate: '/removeUser',
             controller: RemoveUserFromGroupController::class,
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
@@ -191,6 +192,34 @@ use Symfony\Component\Validator\Constraints as Assert;
                                             'type' => 'string',
                                         ],
                                         'userId' => [
+                                            'type' => 'string',
+                                        ],
+                                        'epoch' => [
+                                            'type' => 'string',
+                                        ],
+                                    ]
+                                ]
+                            ]
+                        ]
+                    )
+                )
+            ),
+            read: false,
+        ),
+        new Post(
+            uriTemplate: '/leaveGroup',
+            controller: LeaveGroupController::class,
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new ArrayObject([
+                            'application/ld+json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'message' => [
+                                            'type' => 'string',
+                                        ],
+                                        'groupId' => [
                                             'type' => 'string',
                                         ],
                                         'epoch' => [
