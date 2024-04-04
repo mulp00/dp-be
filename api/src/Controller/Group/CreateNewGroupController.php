@@ -57,15 +57,15 @@ class CreateNewGroupController
 
         $serializedGroup = $data['serializedGroup'] ?? null;
         if (!$serializedGroup) {
-            throw new BadRequestHttpException('address is required');
+            throw new BadRequestHttpException('serializedGroup is required');
         }
         $groupName = $data['name'] ?? null;
         if (!$groupName) {
-            throw new BadRequestHttpException('address is required');
+            throw new BadRequestHttpException('name is required');
         }
         $ratchetTree = $data['ratchetTree'] ?? null;
         if (!$ratchetTree) {
-            throw new BadRequestHttpException('address is required');
+            throw new BadRequestHttpException('ratchetTree is required');
         }
 
         $group = new Group($groupName, $user, $ratchetTree);

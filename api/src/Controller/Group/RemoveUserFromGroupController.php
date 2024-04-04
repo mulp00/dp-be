@@ -54,12 +54,20 @@ class RemoveUserFromGroupController
         }
 
         $message = $data['message'] ?? null;
+        if (!$message) {
+            throw new BadRequestHttpException('message is required');
+        }
         $groupId = $data['groupId'] ?? null;
+        if (!$groupId) {
+            throw new BadRequestHttpException('groupId is required');
+        }
         $targetUserId = $data['userId'] ?? null;
+        if (!$targetUserId) {
+            throw new BadRequestHttpException('targetUserId is required');
+        }
         $postedEpoch = $data['epoch'] ?? null;
-
-        if (!$message || !$groupId || !$postedEpoch || $targetUserId) {
-            throw new BadRequestHttpException('message, groupId, epoch and targetUserId are required');
+        if (!$postedEpoch) {
+            throw new BadRequestHttpException('postedEpoch is required');
         }
 
         /** @var Group $group */

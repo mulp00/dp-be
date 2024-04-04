@@ -57,11 +57,11 @@ class GetMessagesController
 
         $groupId = $data['groupId'] ?? null;
         if (!$groupId) {
-            throw new BadRequestHttpException('address is required');
+            throw new BadRequestHttpException('groupId is required');
         }
         $epoch = $data['epoch'] ?? null;
         if (!$epoch) {
-            throw new BadRequestHttpException('address is required');
+            throw new BadRequestHttpException('epoch is required');
         }
         /** @var Group $group */
         $group = $iriConverter->getResourceFromIri('/groups/' . $groupId);
