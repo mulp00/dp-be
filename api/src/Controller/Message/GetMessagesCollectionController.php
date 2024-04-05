@@ -3,7 +3,7 @@
 namespace App\Controller\Message;
 
 use ApiPlatform\Api\IriConverterInterface;
-use App\DTO\MessageCollectionDTO;
+use App\DTO\Message\MessageCollectionDTO;
 use App\Entity\Group;
 use App\Entity\User;
 use App\Repository\MessageRepository;
@@ -15,7 +15,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 #[AsController]
-class GetMessagesController
+class GetMessagesCollectionController
 {
     private Security $security;
     private SerializerInterface $serializer;
@@ -66,11 +66,15 @@ class GetMessagesController
         /** @var Group $group */
         $group = $iriConverter->getResourceFromIri('/groups/' . $groupId);
 
+        if (!in_array($user, $group->getUsers()->toArray())) {
+            throw new BadRequestHttpException('You cant access this resource');
+        }
+
         $messages = $this->messageRepository->findMessagesByGroupIdWithMinEpoch($group->getId(), $epoch);
 
-        $messagesDTO = new MessageCollectionDTO($messages);
+        $messagesCollectionDTO = new MessageCollectionDTO($messages);
 
-        $jsonContentResponse = $this->serializer->serialize($messagesDTO, 'json');
+        $jsonContentResponse = $this->serializer->serialize($messagesCollectionDTO->messages, 'json');
 
 
         return new Response($jsonContentResponse, Response::HTTP_OK, ['Content-Type' => 'application/json']);

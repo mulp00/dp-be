@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Controller\SerializedUserGroup;
+namespace App\Controller\GroupItem;
 
 use ApiPlatform\Api\IriConverterInterface;
-use App\DTO\SerializedUserGroup\SerializedUserGroupDTO;
+use App\DTO\GroupItem\GroupItemDTO;
 use App\Entity\Group;
-use App\Entity\SerializedUserGroup;
+use App\Entity\GroupItem;
 use App\Entity\User;
-use App\Entity\WelcomeMessage;
+use App\Enum\GroupItemType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,26 +17,23 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 #[AsController]
-class CreateSerializedUserGroupAfterJoinController
+class CreateGroupItemController
 {
-
     private Security $security;
-    private EntityManagerInterface $entityManager;
-
     private SerializerInterface $serializer;
+    private EntityManagerInterface $entityManager;
 
     /**
      * @param Security $security
-     * @param EntityManagerInterface $entityManager
      * @param SerializerInterface $serializer
+     * @param EntityManagerInterface $entityManager
      */
-    public function __construct(Security $security, EntityManagerInterface $entityManager, SerializerInterface $serializer)
+    public function __construct(Security $security, SerializerInterface $serializer, EntityManagerInterface $entityManager)
     {
         $this->security = $security;
-        $this->entityManager = $entityManager;
         $this->serializer = $serializer;
+        $this->entityManager = $entityManager;
     }
-
 
     public function __invoke(Request $request, IriConverterInterface $iriConverter): Response
     {
@@ -58,59 +55,45 @@ class CreateSerializedUserGroupAfterJoinController
             throw new BadRequestHttpException('Invalid JSON body data');
         }
 
+        $name = $data['name'] ?? null;
+        if (!$name) {
+            throw new BadRequestHttpException('name is required');
+        }
         $groupId = $data['groupId'] ?? null;
         if (!$groupId) {
             throw new BadRequestHttpException('groupId is required');
         }
-        $serializedUserGroupContents = $data['serializedUserGroup'] ?? null;
-        if (!$serializedUserGroupContents) {
-            throw new BadRequestHttpException('serializedUserGroup is required');
+
+        $typeProvided = $data['type'] ?? null;
+        if (!$typeProvided) {
+            throw new BadRequestHttpException('type is required');
+        }
+        $content = $data['content'] ?? null;
+        if (!$content) {
+            throw new BadRequestHttpException('content is required');
         }
 
-        $epoch = $data['epoch'] ?? null;
-        if (!$epoch) {
-            throw new BadRequestHttpException('epoch is required');
-        }
-        $welcomeMessageId = $data['welcomeMessageId'] ?? null;
-        if (!$welcomeMessageId) {
-            throw new BadRequestHttpException('welcomeMessageId is required');
-        }
+        $type = GroupItemType::from($typeProvided);
 
         /** @var Group $group */
         $group = $iriConverter->getResourceFromIri('/groups/' . $groupId);
+
 
         if (!in_array($user, $group->getUsers()->toArray())) {
             throw new BadRequestHttpException('You cant access this resource');
         }
 
-        foreach ($user->getSerializedUserGroups() as $serializedUserGroup){
-            if($serializedUserGroup->getGroupEntity() === $group){
-                throw new BadRequestHttpException('Group already joined');
-            }
-        }
-
-        $newSerializedUserGroup = new SerializedUserGroup($user, $serializedUserGroupContents, $group, $epoch);
-
-        $this->entityManager->persist($newSerializedUserGroup);
-        $this->entityManager->flush();
-
-        $serializedUserGroupDTO = new SerializedUserGroupDTO($newSerializedUserGroup);
-
-        $jsonContentResponse = $this->serializer->serialize($serializedUserGroupDTO, 'json');
-
-        /** @var WelcomeMessage $welcomeMessage */
-        $welcomeMessage = $iriConverter->getResourceFromIri('/welcome_messages/' . $welcomeMessageId);
-        $welcomeMessage->setIsJoined(true);
+        $groupItem = new GroupItem($name, $group, $type, $content);
 
         $this->entityManager->persist($group);
-        $this->entityManager->persist($user);
-        $this->entityManager->persist($welcomeMessage);
+        $this->entityManager->persist($groupItem);
         $this->entityManager->flush();
+
+        $jsonContentResponse = $this->serializer->serialize(new GroupItemDTO($groupItem), 'json');
 
         return new Response($jsonContentResponse, Response::HTTP_OK, ['Content-Type' => 'application/json']);
 
 
     }
-
 
 }

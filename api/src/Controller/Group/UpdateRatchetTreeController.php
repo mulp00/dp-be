@@ -61,7 +61,7 @@ class UpdateRatchetTreeController
         /** @var Group $group */
         $group = $iriConverter->getResourceFromIri('/groups/'.$groupId);
 
-        if (!$group->getUsers()->contains($user)) {
+        if (!in_array($user, $group->getUsers()->toArray())) {
             throw new BadRequestHttpException('You cant access this resource');
         }
 

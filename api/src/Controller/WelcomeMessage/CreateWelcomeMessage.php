@@ -3,7 +3,6 @@
 namespace App\Controller\WelcomeMessage;
 
 use ApiPlatform\Api\IriConverterInterface;
-use App\DTO\SerializedUserGroupDTO;
 use App\Entity\Group;
 use App\Entity\Message;
 use App\Entity\SerializedUserGroup;
@@ -76,6 +75,10 @@ class CreateWelcomeMessage
         $group = $iriConverter->getResourceFromIri('/groups/'.$groupId);
         /** @var User $member */
         $member = $iriConverter->getResourceFromIri('/users/'.$memberId);
+
+        if (!in_array($user, $group->getUsers()->toArray())) {
+            throw new BadRequestHttpException('You cant access this resource');
+        }
 
         $latestMessage = $this->messageRepository->findLatestMessageByGroupId($group->getId());
         $lastMessageEpochNumber = $latestMessage ? $latestMessage->getEpoch() : 1;

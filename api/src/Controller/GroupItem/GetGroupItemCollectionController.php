@@ -1,39 +1,37 @@
 <?php
 
-namespace App\Controller\Group;
+namespace App\Controller\GroupItem;
 
 use ApiPlatform\Api\IriConverterInterface;
-use App\DTO\SerializedUserGroup\SerializedUserGroupDTO;
+use App\DTO\GroupItem\GroupItemCollectionDTO;
+use App\DTO\Message\MessageCollectionDTO;
 use App\Entity\Group;
-use App\Entity\SerializedUserGroup;
 use App\Entity\User;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\GroupItemRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
-
 #[AsController]
-class CreateNewGroupController
+class GetGroupItemCollectionController
 {
-    private Security $security;
+    private GroupItemRepository $groupItemRepository;
     private SerializerInterface $serializer;
-    private EntityManagerInterface $entityManager;
+    private Security $security;
 
     /**
-     * @param Security $security
+     * @param GroupItemRepository $groupItemRepository
      * @param SerializerInterface $serializer
-     * @param EntityManagerInterface $entityManager
+     * @param Security $security
      */
-    public function __construct(Security $security, SerializerInterface $serializer, EntityManagerInterface $entityManager)
+    public function __construct(GroupItemRepository $groupItemRepository, SerializerInterface $serializer, Security $security)
     {
-        $this->security = $security;
+        $this->groupItemRepository = $groupItemRepository;
         $this->serializer = $serializer;
-        $this->entityManager = $entityManager;
+        $this->security = $security;
     }
-
 
     public function __invoke(Request $request, IriConverterInterface $iriConverter): Response
     {
@@ -55,28 +53,28 @@ class CreateNewGroupController
             throw new BadRequestHttpException('Invalid JSON body data');
         }
 
-        $serializedGroup = $data['serializedGroup'] ?? null;
-        if (!$serializedGroup) {
-            throw new BadRequestHttpException('serializedGroup is required');
-        }
-        $groupName = $data['name'] ?? null;
-        if (!$groupName) {
-            throw new BadRequestHttpException('name is required');
+        $groupId = $data['groupId'] ?? null;
+        if (!$groupId) {
+            throw new BadRequestHttpException('groupId is required');
         }
 
-        $group = new Group($groupName, $user);
+        /** @var Group $group */
+        $group = $iriConverter->getResourceFromIri('/groups/' . $groupId);
 
-        $serializedUserGroup = new SerializedUserGroup($user, $serializedGroup, $group, 1);
+        if (!in_array($user, $group->getUsers()->toArray())) {
+            throw new BadRequestHttpException('You cant access this resource');
+        }
 
-        $this->entityManager->persist($group);
-        $this->entityManager->persist($serializedUserGroup);
-        $this->entityManager->flush();
+        $groupItems = $this->groupItemRepository->findByTargetGroupId($group->getId());
 
-        $jsonContentResponse = $this->serializer->serialize(new SerializedUserGroupDTO($serializedUserGroup), 'json');
+        $groupItemsDto = new GroupItemCollectionDTO($groupItems);
+
+        $jsonContentResponse = $this->serializer->serialize($groupItemsDto->groupItems, 'json');
 
 
         return new Response($jsonContentResponse, Response::HTTP_OK, ['Content-Type' => 'application/json']);
 
 
     }
+
 }

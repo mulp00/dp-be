@@ -45,6 +45,9 @@ class Group
     #[ORM\Column]
     private ?int $epoch = null;
 
+    #[ORM\OneToMany(mappedBy: 'targetGroup', targetEntity: GroupItem::class, fetch: 'EAGER', orphanRemoval: true)]
+    private Collection $groupItems;
+
     /**
      * @param string|null $name
      * @param User $creator
@@ -56,6 +59,7 @@ class Group
         $this->creator = $creator;
         $this->messages = new ArrayCollection();
         $this->epoch = 1;
+        $this->groupItems = new ArrayCollection();
     }
 
 
@@ -154,6 +158,36 @@ class Group
     public function addEpoch(): void
     {
         $this->epoch = $this->epoch +1;
+    }
+
+    /**
+     * @return Collection<int, GroupItem>
+     */
+    public function getGroupItems(): Collection
+    {
+        return $this->groupItems;
+    }
+
+    public function addGroupItem(GroupItem $groupItem): static
+    {
+        if (!$this->groupItems->contains($groupItem)) {
+            $this->groupItems->add($groupItem);
+            $groupItem->setTargetGroup($this);
+        }
+
+        return $this;
+    }
+
+    public function removeGroupItem(GroupItem $groupItem): static
+    {
+        if ($this->groupItems->removeElement($groupItem)) {
+            // set the owning side to null (unless already changed)
+            if ($groupItem->getTargetGroup() === $this) {
+                $groupItem->setTargetGroup(null);
+            }
+        }
+
+        return $this;
     }
 
 

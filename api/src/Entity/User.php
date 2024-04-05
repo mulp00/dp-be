@@ -12,8 +12,10 @@ use App\Controller\Group\GetGroupsToJoin;
 use App\Controller\Group\LeaveGroupController;
 use App\Controller\Group\RemoveUserFromGroupController;
 use App\Controller\Group\UpdateRatchetTreeController;
+use App\Controller\GroupItem\CreateGroupItemController;
+use App\Controller\GroupItem\GetGroupItemCollectionController;
 use App\Controller\Message\CreateGeneralCommitMessageController;
-use App\Controller\Message\GetMessagesController;
+use App\Controller\Message\GetMessagesCollectionController;
 use App\Controller\MFKDFPolicy\GetMFKDFByEmailController;
 use App\Controller\SerializedUserGroup\CreateSerializedUserGroupAfterJoinController;
 use App\Controller\SerializedUserGroup\GetSerializedUserGroupCollection;
@@ -120,7 +122,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Post(
             uriTemplate: '/getCommitMessages',
-            controller: GetMessagesController::class,
+            controller: GetMessagesCollectionController::class,
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
                     content: new ArrayObject([
@@ -225,6 +227,37 @@ use Symfony\Component\Validator\Constraints as Assert;
                                             'type' => 'string',
                                         ],
                                         'epoch' => [
+                                            'type' => 'string',
+                                        ],
+                                    ]
+                                ]
+                            ]
+                        ]
+                    )
+                )
+            ),
+            read: false,
+        ),
+        new Post(
+            uriTemplate: '/createGroupItem',
+            controller: CreateGroupItemController::class,
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new ArrayObject([
+                            'application/ld+json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'name' => [
+                                            'type' => 'string',
+                                        ],
+                                        'groupId' => [
+                                            'type' => 'string',
+                                        ],
+                                        'type' => [
+                                            'type' => 'string',
+                                        ],
+                                        'content' => [
                                             'type' => 'string',
                                         ],
                                     ]
@@ -381,6 +414,28 @@ use Symfony\Component\Validator\Constraints as Assert;
                                     'type' => 'object',
                                     'properties' => [
                                         'keyPackage' => [
+                                            'type' => 'string',
+                                        ],
+                                    ]
+                                ]
+                            ]
+                        ]
+                    )
+                )
+            ),
+            read: false,
+        ),
+        new Post(
+            uriTemplate: '/getGroupItems',
+            controller: GetGroupItemCollectionController::class,
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new ArrayObject([
+                            'application/merge-patch+json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'groupId' => [
                                             'type' => 'string',
                                         ],
                                     ]

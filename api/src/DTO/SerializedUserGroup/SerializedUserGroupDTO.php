@@ -1,9 +1,10 @@
 <?php
 
-namespace App\DTO;
+namespace App\DTO\SerializedUserGroup;
 
+use App\DTO\User\PublicUserCollectionDTO;
+use App\DTO\User\PublicUserDTO;
 use App\Entity\SerializedUserGroup;
-use App\Entity\User;
 use Symfony\Component\Uid\Uuid;
 
 class SerializedUserGroupDTO

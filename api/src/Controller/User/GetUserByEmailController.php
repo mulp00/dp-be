@@ -2,17 +2,15 @@
 
 namespace App\Controller\User;
 
-use App\DTO\PublicUserDTO;
-use App\DTO\PublicUserCollectionDTO;
-use App\DTO\SerializedUserGroupDTO;
-use App\Entity\SerializedUserGroup;
+
+use App\DTO\User\PublicUserCollectionDTO;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\HttpFoundation\Request;
 
 
 #[AsController]

@@ -2,8 +2,7 @@
 
 namespace App\Controller\SerializedUserGroup;
 
-use App\DTO\SerializedUserGroupDTO;
-use App\Entity\SerializedUserGroup;
+use App\DTO\SerializedUserGroup\SerializedUserGroupCollectionDTO;
 use App\Entity\User;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Response;
@@ -41,12 +40,10 @@ class GetSerializedUserGroupCollection
         }
 
 
-        $serializedUserGroups = array_map(function (SerializedUserGroup $serializedUserGroup) {
-            return new SerializedUserGroupDTO($serializedUserGroup);
-        }, $user->getSerializedUserGroups()->toArray()) ;
+        $serializedUserGroupCollection = new SerializedUserGroupCollectionDTO($user->getSerializedUserGroups()->toArray());
 
 
-        $jsonContentResponse = $this->serializer->serialize($serializedUserGroups, 'json');
+        $jsonContentResponse = $this->serializer->serialize($serializedUserGroupCollection->serializedUserGroups, 'json');
 
 
         return new Response($jsonContentResponse, Response::HTTP_OK, ['Content-Type' => 'application/json']);

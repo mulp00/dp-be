@@ -67,6 +67,9 @@ class CreateGeneralCommitMessageController
         /** @var Group $group */
         $group = $iriConverter->getResourceFromIri('/groups/'.$groupId);
 
+        if (!in_array($user, $group->getUsers()->toArray())) {
+            throw new BadRequestHttpException('You cant access this resource');
+        }
         $latestMessage = $this->messageRepository->findLatestMessageByGroupId($group->getId());
         $lastMessageEpochNumber = $latestMessage ? $latestMessage->getEpoch() : 1;
 

@@ -75,6 +75,10 @@ class RemoveUserFromGroupController
         /** @var User $removedUser */
         $removedUser = $iriConverter->getResourceFromIri('/users/'.$targetUserId);
 
+        if (!in_array($user, $group->getUsers()->toArray())) {
+            throw new BadRequestHttpException('You cant access this resource');
+        }
+
         $latestMessage = $this->messageRepository->findLatestMessageByGroupId($group->getId());
         $lastMessageEpochNumber = $latestMessage ? $latestMessage->getEpoch() : 1;
 
@@ -85,7 +89,9 @@ class RemoveUserFromGroupController
         try {
 
             $removedUserSerializedUserGroup = $removedUser->getSerializedUserGroupByGroup($group);
-            $removedUser->removeSerializedUserGroup($removedUserSerializedUserGroup);
+            if($removedUserSerializedUserGroup !== null) {
+                $removedUser->removeSerializedUserGroup($removedUserSerializedUserGroup);
+            }
             $removedUser->removeGroup($group);
 
             $commitMessage = new Message($group, $postedEpoch + 1, $message);

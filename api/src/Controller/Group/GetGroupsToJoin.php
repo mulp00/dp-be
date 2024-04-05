@@ -2,7 +2,7 @@
 
 namespace App\Controller\Group;
 
-use App\DTO\WelcomeMessageCollectionDTO;
+use App\DTO\WelcomeMessage\WelcomeMessageCollectionDTO;
 use App\Entity\User;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
@@ -57,7 +57,7 @@ class GetGroupsToJoin
 
         $welcomeMessageCollectionDTO = new WelcomeMessageCollectionDTO($groupsToJoin);
 
-        $jsonContentResponse = $this->serializer->serialize($welcomeMessageCollectionDTO, 'json');
+        $jsonContentResponse = $this->serializer->serialize($welcomeMessageCollectionDTO->welcomeMessages, 'json');
 
         return new Response($jsonContentResponse, Response::HTTP_OK, ['Content-Type' => 'application/json']);
 
