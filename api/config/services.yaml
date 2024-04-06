@@ -28,6 +28,15 @@ services:
     
     App\EventListener\JWTExpiredListener:
         tags:
-            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_expired, method: onJWTExpired }
-    
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_expired, method: onJWTExpired }    
 
+    App\EventListener\JWTInvalidListener:
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_invalid, method: onJWTInvalid }
+#    App\EventListener\AuthenticationSuccessListener:
+#        tags:
+#            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccess }
+
+    App\EventListener\RefreshTokenFailureListener:
+        tags:
+            - { name: kernel.event_listener, event: gesdinet.jwtrefreshtoken.refresh_token_not_found, method: onRefreshTokenFailure }

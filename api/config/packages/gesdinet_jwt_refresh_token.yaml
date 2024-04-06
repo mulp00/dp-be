@@ -3,3 +3,12 @@ gesdinet_jwt_refresh_token:
     ttl: 2592000
     user_identity_field: email
     ttl_update: true
+    logout_firewall: main
+    cookie:
+        enabled: true
+        same_site: none               # Default value, adjust as needed
+        path: /                      # Default value lax, ensures cookie is sent for all paths
+        domain: localhost                 # Default value, adjust if you need to share cookies across subdomains
+        http_only: true              # Default value, makes the cookie inaccessible to JavaScript
+        secure: true                 # Default value, ensures cookie is sent over HTTPS only
+        remove_token_from_body: true # Removes the refresh token from the response body

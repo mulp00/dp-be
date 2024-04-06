@@ -10,3 +10,7 @@ auth:
 gesdinet_jwt_refresh_token:
     path:       /token/refresh
     controller: gesdinet.jwtrefreshtoken::refresh
+    
+api_token_invalidate:
+    path: /token/invalidate
+
