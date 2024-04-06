@@ -29,19 +29,30 @@ class GroupItem
    #[ORM\Column(type: 'text',length: 255)]
    private ?string $content = null;
 
+   #[ORM\Column(length: 255)]
+   private ?string $iv = null;
+
+   #[ORM\Column(length: 255)]
+   private ?string $description = null;
+
     /**
      * @param string|null $name
      * @param Group|null $targetGroup
      * @param GroupItemType|null $type
      * @param string|null $content
+     * @param string|null $iv
+     * @param string|null $description
      */
-    public function __construct(?string $name, ?Group $targetGroup, ?GroupItemType $type, ?string $content)
+    public function __construct(?string $name, ?Group $targetGroup, ?GroupItemType $type, ?string $content, ?string $iv, ?string $description)
     {
         $this->name = $name;
         $this->targetGroup = $targetGroup;
         $this->type = $type;
         $this->content = $content;
+        $this->iv = $iv;
+        $this->description = $description;
     }
+
 
     public function getId(): Uuid
     {
@@ -90,6 +101,30 @@ class GroupItem
     public function setName(string $name): static
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getIv(): ?string
+    {
+        return $this->iv;
+    }
+
+    public function setIv(string $iv): static
+    {
+        $this->iv = $iv;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(string $description): static
+    {
+        $this->description = $description;
 
         return $this;
     }

@@ -14,6 +14,7 @@ use App\Controller\Group\RemoveUserFromGroupController;
 use App\Controller\Group\UpdateRatchetTreeController;
 use App\Controller\GroupItem\CreateGroupItemController;
 use App\Controller\GroupItem\GetGroupItemCollectionController;
+use App\Controller\GroupItem\UpdateGroupItemController;
 use App\Controller\Message\CreateGeneralCommitMessageController;
 use App\Controller\Message\GetMessagesCollectionController;
 use App\Controller\MFKDFPolicy\GetMFKDFByEmailController;
@@ -251,6 +252,9 @@ use Symfony\Component\Validator\Constraints as Assert;
                                         'name' => [
                                             'type' => 'string',
                                         ],
+                                        'description' => [
+                                            'type' => 'string',
+                                        ],
                                         'groupId' => [
                                             'type' => 'string',
                                         ],
@@ -258,6 +262,52 @@ use Symfony\Component\Validator\Constraints as Assert;
                                             'type' => 'string',
                                         ],
                                         'content' => [
+                                            'type' => 'string',
+                                        ],
+                                        'iv' => [
+                                            'type' => 'string',
+                                        ],
+                                    ]
+                                ]
+                            ]
+                        ]
+                    )
+                )
+            ),
+            read: false,
+        ),
+        new Patch(
+            uriTemplate: '/updateGroupItem',
+            controller: UpdateGroupItemController::class,
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new ArrayObject([
+                            'application/merge-patch+json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'itemId' => [
+                                            'type' => 'string',
+                                        ],
+                                        'name' => [
+                                            'type' => 'string',
+                                        ],
+                                        'description' => [
+                                            'type' => 'string',
+                                        ],
+                                        'groupId' => [
+                                            'type' => 'string',
+                                        ],
+                                        'type' => [
+                                            'type' => 'string',
+                                        ],
+                                        'content' => [
+                                            'type' => 'string',
+                                        ],
+                                        'iv' => [
+                                            'type' => 'string',
+                                        ],
+                                        'epoch' => [
                                             'type' => 'string',
                                         ],
                                     ]

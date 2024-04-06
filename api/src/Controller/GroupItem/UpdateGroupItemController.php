@@ -17,7 +17,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 #[AsController]
-class CreateGroupItemController
+class UpdateGroupItemController
 {
     private Security $security;
     private SerializerInterface $serializer;
@@ -55,6 +55,10 @@ class CreateGroupItemController
             throw new BadRequestHttpException('Invalid JSON body data');
         }
 
+        $itemId = $data['itemId'] ?? null;
+        if (!$itemId) {
+            throw new BadRequestHttpException('id is required');
+        }
         $name = $data['name'] ?? null;
         if (!$name) {
             throw new BadRequestHttpException('name is required');
@@ -90,16 +94,25 @@ class CreateGroupItemController
         /** @var Group $group */
         $group = $iriConverter->getResourceFromIri('/groups/' . $groupId);
 
-        if($postedEpoch !== $group->getEpoch()){
-            throw new BadRequestHttpException('Epochs dont match, catch up on group updates');
-        }
-
+        /** @var GroupItem $groupItem */
+        $groupItem = $iriConverter->getResourceFromIri('/group_items/' . $itemId);
 
         if (!in_array($user, $group->getUsers()->toArray())) {
             throw new BadRequestHttpException('You cant access this resource');
         }
 
-        $groupItem = new GroupItem($name, $group, $type, $content, $iv, $description);
+        if($postedEpoch !== $group->getEpoch()){
+            throw new BadRequestHttpException('Epochs dont match, catch up on group updates');
+        }
+        if($type !== $groupItem->getType()){
+            throw new BadRequestHttpException('Item types do not match');
+        }
+
+
+        $groupItem->setContent($content);
+        $groupItem->setIv($iv);
+        $groupItem->setName($name);
+        $groupItem->setDescription($description);
 
         $this->entityManager->persist($group);
         $this->entityManager->persist($groupItem);
