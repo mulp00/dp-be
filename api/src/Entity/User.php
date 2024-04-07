@@ -13,6 +13,7 @@ use App\Controller\Group\LeaveGroupController;
 use App\Controller\Group\RemoveUserFromGroupController;
 use App\Controller\Group\UpdateRatchetTreeController;
 use App\Controller\GroupItem\CreateGroupItemController;
+use App\Controller\GroupItem\DeleteGroupItemController;
 use App\Controller\GroupItem\GetGroupItemCollectionController;
 use App\Controller\GroupItem\UpdateGroupItemController;
 use App\Controller\Message\CreateGeneralCommitMessageController;
@@ -308,6 +309,28 @@ use Symfony\Component\Validator\Constraints as Assert;
                                             'type' => 'string',
                                         ],
                                         'epoch' => [
+                                            'type' => 'string',
+                                        ],
+                                    ]
+                                ]
+                            ]
+                        ]
+                    )
+                )
+            ),
+            read: false,
+        ),
+        new Post(
+            uriTemplate: '/deleteGroupItem',
+            controller: DeleteGroupItemController::class,
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new ArrayObject([
+                            'application/merge-patch+json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'itemId' => [
                                             'type' => 'string',
                                         ],
                                     ]
