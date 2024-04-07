@@ -26,6 +26,7 @@ use App\Controller\SerializedUserGroup\UpdateSerializedUserGroupController;
 use App\Controller\User\GetUserByEmailController;
 use App\Controller\User\GetUserIdentityController;
 use App\Controller\User\PatchKeyStoreController;
+use App\Controller\User\RegisterController;
 use App\Controller\User\UpdateKeyPackageController;
 use App\Controller\WelcomeMessage\CreateWelcomeMessage;
 use App\Repository\UserRepository;
@@ -47,8 +48,8 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Get(normalizationContext: ['groups' => ['tst']]),
         new Post(
             uriTemplate: '/auth/register',
-            validationContext: ['groups' => ['Default', 'user:create', 'mfkdfpolicy:create']],
-            processor: UserMasterKeyDoubleHasher::class),
+            controller: RegisterController::class,
+        ),
         new Get(uriTemplate: '/auth/user/{id}/policy',
             controller: GetMFKDFByEmailController::class,
             openapiContext: [
@@ -574,10 +575,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $masterKeyHash = null;
 
-    #[Assert\NotBlank(groups: ['user:create'])]
-    #[Groups(['user:create', 'user:update'])]
-    private ?string $masterKey = null;
-
     #[ORM\OneToOne(mappedBy: 'policyUser', cascade: ['persist', 'remove'])]
     #[Groups(['user:create', 'user:update', 'mfkdfpolicy:read'])]
     private ?MFKDFPolicy $mfkdfpolicy = null;
@@ -614,6 +611,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->createdGroups = new ArrayCollection();
         $this->welcomeMessages = new ArrayCollection();
     }
+
 
     public function getSerializedUserGroupByGroup(Group $group): ?SerializedUserGroup
     {
@@ -704,24 +702,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getMasterKey(): ?string
-    {
-        return $this->masterKey;
-    }
-
-    public function setMasterKey(?string $masterKey): void
-    {
-        $this->masterKey = $masterKey;
-    }
-
-
     /**
      * @see UserInterface
      */
     public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here
-        $this->masterKey = null;
+
     }
 
     public function getMfkdfpolicy(): ?MFKDFPolicy
