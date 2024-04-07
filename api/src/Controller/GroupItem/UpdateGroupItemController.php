@@ -80,10 +80,6 @@ class UpdateGroupItemController
         if (!$content) {
             throw new BadRequestHttpException('content is required');
         }
-        $iv = $data['iv'] ?? null;
-        if (!$iv) {
-            throw new BadRequestHttpException('iv is required');
-        }
         $postedEpoch = $data['epoch'] ?? null;
         if (!$postedEpoch) {
             throw new BadRequestHttpException('epoch is required');
@@ -110,7 +106,6 @@ class UpdateGroupItemController
 
 
         $groupItem->setContent($content);
-        $groupItem->setIv($iv);
         $groupItem->setName($name);
         $groupItem->setDescription($description);
 

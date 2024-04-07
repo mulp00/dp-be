@@ -11,8 +11,7 @@ class GroupItemDTO
     public string $description;
     public string $groupId;
     public string $type;
-    public string $content;
-    public string $iv;
+    public array $content;
 
     /**
      * @param GroupItem $groupItem
@@ -25,7 +24,6 @@ class GroupItemDTO
         $this->groupId = $groupItem->getTargetGroup()->getId();
         $this->type = $groupItem->getType()->value;
         $this->content = $groupItem->getContent();
-        $this->iv = $groupItem->getIv();
     }
 
     public function getName(): string
@@ -51,7 +49,7 @@ class GroupItemDTO
         return $this->type;
     }
 
-    public function getContent(): string
+    public function getContent(): array
     {
         return $this->content;
     }
@@ -61,10 +59,6 @@ class GroupItemDTO
         return $this->id;
     }
 
-    public function getIv(): string
-    {
-        return $this->iv;
-    }
 
 
 }

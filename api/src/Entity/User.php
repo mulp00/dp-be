@@ -267,9 +267,6 @@ use Symfony\Component\Validator\Constraints as Assert;
                                         'content' => [
                                             'type' => 'string',
                                         ],
-                                        'iv' => [
-                                            'type' => 'string',
-                                        ],
                                     ]
                                 ]
                             ]
@@ -305,9 +302,6 @@ use Symfony\Component\Validator\Constraints as Assert;
                                             'type' => 'string',
                                         ],
                                         'content' => [
-                                            'type' => 'string',
-                                        ],
-                                        'iv' => [
                                             'type' => 'string',
                                         ],
                                         'epoch' => [

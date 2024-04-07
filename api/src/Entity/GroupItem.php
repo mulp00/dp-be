@@ -26,11 +26,8 @@ class GroupItem
    #[ORM\Column(type:"string", length:255, enumType:GroupItemType::class)]
     private ?GroupItemType $type = null;
 
-   #[ORM\Column(type: 'text',length: 255)]
-   private ?string $content = null;
-
-   #[ORM\Column(length: 255)]
-   private ?string $iv = null;
+   #[ORM\Column(type: 'array')]
+   private ?array $content = null;
 
    #[ORM\Column(length: 255)]
    private ?string $description = null;
@@ -39,17 +36,15 @@ class GroupItem
      * @param string|null $name
      * @param Group|null $targetGroup
      * @param GroupItemType|null $type
-     * @param string|null $content
-     * @param string|null $iv
+     * @param array|null $content
      * @param string|null $description
      */
-    public function __construct(?string $name, ?Group $targetGroup, ?GroupItemType $type, ?string $content, ?string $iv, ?string $description)
+    public function __construct(?string $name, ?Group $targetGroup, ?GroupItemType $type, ?array $content, ?string $description)
     {
         $this->name = $name;
         $this->targetGroup = $targetGroup;
         $this->type = $type;
         $this->content = $content;
-        $this->iv = $iv;
         $this->description = $description;
     }
 
@@ -81,17 +76,16 @@ class GroupItem
         $this->type = $type;
     }
 
-    public function getContent(): ?string
+    public function getContent(): ?array
     {
         return $this->content;
     }
 
-    public function setContent(string $content): static
+    public function setContent(?array $content): void
     {
         $this->content = $content;
-
-        return $this;
     }
+
 
     public function getName(): ?string
     {
@@ -101,18 +95,6 @@ class GroupItem
     public function setName(string $name): static
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    public function getIv(): ?string
-    {
-        return $this->iv;
-    }
-
-    public function setIv(string $iv): static
-    {
-        $this->iv = $iv;
 
         return $this;
     }

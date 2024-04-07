@@ -76,10 +76,6 @@ class CreateGroupItemController
         if (!$content) {
             throw new BadRequestHttpException('content is required');
         }
-        $iv = $data['iv'] ?? null;
-        if (!$iv) {
-            throw new BadRequestHttpException('iv is required');
-        }
         $postedEpoch = $data['epoch'] ?? null;
         if (!$postedEpoch) {
             throw new BadRequestHttpException('epoch is required');
@@ -90,7 +86,7 @@ class CreateGroupItemController
         /** @var Group $group */
         $group = $iriConverter->getResourceFromIri('/groups/' . $groupId);
 
-        if($postedEpoch !== $group->getEpoch()){
+        if ($postedEpoch !== $group->getEpoch()) {
             throw new BadRequestHttpException('Epochs dont match, catch up on group updates');
         }
 
@@ -99,7 +95,7 @@ class CreateGroupItemController
             throw new BadRequestHttpException('You cant access this resource');
         }
 
-        $groupItem = new GroupItem($name, $group, $type, $content, $iv, $description);
+        $groupItem = new GroupItem($name, $group, $type, $content, $description);
 
         $this->entityManager->persist($group);
         $this->entityManager->persist($groupItem);
