@@ -31,8 +31,8 @@ class WelcomeMessage
     #[ORM\Column(name: 'message', type: 'text')]
     private ?string $message = null;
 
-    #[ORM\OneToOne] // TODO mozna bude delat problemy
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\OneToOne(cascade: ['remove'])]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private ?Message $correspondingMessage = null;
 
     #[ORM\Column(type: 'text')]

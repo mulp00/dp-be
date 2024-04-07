@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use App\Controller\Group\CreateNewGroupController;
+use App\Controller\Group\DeleteGroupController;
 use App\Controller\Group\GetGroupsToJoin;
 use App\Controller\Group\LeaveGroupController;
 use App\Controller\Group\RemoveUserFromGroupController;
@@ -331,6 +332,28 @@ use Symfony\Component\Validator\Constraints as Assert;
                                     'type' => 'object',
                                     'properties' => [
                                         'itemId' => [
+                                            'type' => 'string',
+                                        ],
+                                    ]
+                                ]
+                            ]
+                        ]
+                    )
+                )
+            ),
+            read: false,
+        ),
+        new Post(
+            uriTemplate: '/deleteGroup',
+            controller: DeleteGroupController::class,
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new ArrayObject([
+                            'application/merge-patch+json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'groupId' => [
                                             'type' => 'string',
                                         ],
                                     ]

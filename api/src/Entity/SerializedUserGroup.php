@@ -32,8 +32,8 @@ class SerializedUserGroup
     #[Serializer\Groups(['serializedUserGroup:read', 'serializedUserGroup:create'])]
     private ?string $serializedGroup = null;
 
-    #[ORM\ManyToOne(cascade: ['persist'])]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     #[Serializer\Groups(['serializedUserGroup:read', 'serializedUserGroup:create'])]
     private ?Group $groupEntity = null;
 
