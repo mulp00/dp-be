@@ -28,11 +28,11 @@ class SerializedUserGroup
     #[ORM\JoinColumn(nullable: false)]
     private ?User $groupUser = null;
 
-    #[ORM\Column(type: 'text', nullable: false)]
+    #[ORM\Column(type: 'array', nullable: false)]
     #[Serializer\Groups(['serializedUserGroup:read', 'serializedUserGroup:create'])]
-    private ?string $serializedGroup = null;
+    private ?array $serializedGroup = null;
 
-    #[ORM\ManyToOne(cascade: ['persist', 'remove'])]
+    #[ORM\ManyToOne(cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     #[Serializer\Groups(['serializedUserGroup:read', 'serializedUserGroup:create'])]
     private ?Group $groupEntity = null;
@@ -42,11 +42,11 @@ class SerializedUserGroup
 
     /**
      * @param User|null $groupUser
-     * @param string|null $serializedGroup
+     * @param array|null $serializedGroup
      * @param Group|null $groupEntity
      * @param int $messageEpoch
      */
-    public function __construct(?User $groupUser, ?string $serializedGroup, ?Group $groupEntity, int $messageEpoch)
+    public function __construct(?User $groupUser, ?array $serializedGroup, ?Group $groupEntity, int $messageEpoch)
     {
         $this->groupUser = $groupUser;
         $this->serializedGroup = $serializedGroup;
@@ -72,17 +72,17 @@ class SerializedUserGroup
         return $this;
     }
 
-    public function getSerializedGroup(): ?string
+    public function getSerializedGroup(): ?array
     {
         return $this->serializedGroup;
     }
 
-    public function setSerializedGroup(string $serializedGroup): static
+    public function setSerializedGroup(?array $serializedGroup): void
     {
         $this->serializedGroup = $serializedGroup;
-
-        return $this;
     }
+
+
 
     public function getGroupEntity(): ?Group
     {

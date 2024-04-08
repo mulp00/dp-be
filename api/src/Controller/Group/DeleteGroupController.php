@@ -71,6 +71,14 @@ class DeleteGroupController
 
         try {
 
+            foreach ($group->getUsers() as $groupUser){
+                $serializedUserGroupToRemove = $groupUser->getSerializedUserGroupByGroup($group);
+                if($serializedUserGroupToRemove !== null){
+                    $groupUser->removeSerializedUserGroup($serializedUserGroupToRemove);
+                    $this->entityManager->persist($groupUser);
+                }
+            }
+
             $this->entityManager->remove($group);
             $this->entityManager->flush();
 

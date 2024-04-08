@@ -49,6 +49,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Post(
             uriTemplate: '/auth/register',
             controller: RegisterController::class,
+            read:false,
         ),
         new Get(uriTemplate: '/auth/user/{id}/policy',
             controller: GetMFKDFByEmailController::class,
@@ -573,9 +574,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:create', 'user:update', 'mfkdfpolicy:read'])]
     private ?MFKDFPolicy $mfkdfpolicy = null;
 
-    #[ORM\Column(type: 'text', nullable: true)]
+    #[ORM\Column(type: 'array', nullable: true)]
     #[Groups(['user:create', 'user:update', 'user:identity'])]
-    private ?string $serializedIdentity = null;
+    private ?array $serializedIdentity = null;
 
     #[ORM\OneToMany(mappedBy: 'groupUser', targetEntity: SerializedUserGroup::class, orphanRemoval: true)]
     #[Groups(['serializedUserGroup:read', 'serializedUserGroup:create'])]
@@ -594,9 +595,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'recipient', targetEntity: WelcomeMessage::class, fetch: 'EAGER', orphanRemoval: true)]
     private Collection $welcomeMessages;
 
-    #[ORM\Column(type: 'text', nullable: true)]
+    #[ORM\Column(type: 'array', nullable: true)]
     #[Groups(['user:create', 'user:update', 'user:identity'])]
-    private ?string $keyStore = null;
+    private ?array $keyStore = null;
 
     public function __construct()
     {
@@ -722,12 +723,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getSerializedIdentity(): ?string
+    public function getSerializedIdentity(): ?array
     {
         return $this->serializedIdentity;
     }
 
-    public function setSerializedIdentity(?string $serializedIdentity): void
+    public function setSerializedIdentity(?array $serializedIdentity): void
     {
         $this->serializedIdentity = $serializedIdentity;
     }
@@ -861,16 +862,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getKeyStore(): ?string
+    public function getKeyStore(): ?array
     {
         return $this->keyStore;
     }
 
-    public function setKeyStore(?string $keyStore): static
+    public function setKeyStore(?array $keyStore): void
     {
         $this->keyStore = $keyStore;
-
-        return $this;
     }
+
+
 
 }

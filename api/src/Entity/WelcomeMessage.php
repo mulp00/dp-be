@@ -20,8 +20,8 @@ class WelcomeMessage
     #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
     private Uuid $id;
 
-    #[ORM\ManyToOne(inversedBy: 'welcomeMessages')]
-    #[ORM\JoinColumn(name: 'recipient_id', nullable: false)]
+    #[ORM\ManyToOne(cascade: ['remove'], inversedBy: 'welcomeMessages')]
+    #[ORM\JoinColumn(name: 'recipient_id', nullable: false, onDelete: 'CASCADE')]
     private ?User $recipient = null;
 
     #[ORM\ManyToOne]

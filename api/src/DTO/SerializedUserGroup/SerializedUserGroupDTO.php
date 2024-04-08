@@ -12,7 +12,7 @@ class SerializedUserGroupDTO
     public Uuid $groupId;
     public Uuid $serializedUserGroupId;
     public string $name;
-    public string $serializedGroup;
+    public array $serializedGroup;
     public PublicUserDTO $creator;
     public int $lastEpoch;
     public int $epoch;
@@ -48,10 +48,16 @@ class SerializedUserGroupDTO
         return $this->serializedUserGroupId;
     }
 
-    public function getSerializedGroup(): string
+    public function getSerializedGroup(): array
     {
         return $this->serializedGroup;
     }
+
+    public function getEpoch(): int
+    {
+        return $this->epoch;
+    }
+
 
     public function getUsers(): array
     {

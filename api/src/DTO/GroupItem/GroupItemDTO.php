@@ -6,7 +6,7 @@ use App\Entity\GroupItem;
 
 class GroupItemDTO
 {
-    public string $id;
+    public string $itemId;
     public string $name;
     public string $description;
     public string $groupId;
@@ -18,7 +18,7 @@ class GroupItemDTO
      */
     public function __construct(GroupItem $groupItem)
     {
-        $this->id = $groupItem->getId();
+        $this->itemId = $groupItem->getId();
         $this->name = $groupItem->getName();
         $this->description = $groupItem->getDescription();
         $this->groupId = $groupItem->getTargetGroup()->getId();
@@ -54,9 +54,9 @@ class GroupItemDTO
         return $this->content;
     }
 
-    public function getId(): string
+    public function getItemId(): string
     {
-        return $this->id;
+        return $this->itemId;
     }
 
 
