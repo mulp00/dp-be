@@ -36,8 +36,7 @@ RUN set -eux; \
 		intl \
 		opcache \
 		zip \
-		--allow-insecure-repositories \
-    ;
+	;
 
 ###> recipes ###
 ###> doctrine/doctrine-bundle ###
