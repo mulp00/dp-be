@@ -36,9 +36,6 @@ class GetMFKDFByEmailController extends AbstractController
             throw new BadRequestHttpException('Name is required');
         }
 
-        $user = $this->userRepository->findOneBy(['email'=>$email]);
-
-        dump($user);
 
         return $this->userRepository->findOneBy(['email'=>$email])->getMfkdfpolicy();
     }
