@@ -95,7 +95,6 @@
       <path value="$PROJECT_DIR$/api/vendor/nette/utils" />
       <path value="$PROJECT_DIR$/api/vendor/cebe/php-openapi" />
       <path value="$PROJECT_DIR$/api/vendor/twig/twig" />
-      <path value="$PROJECT_DIR$/api/vendor/nelmio/cors-bundle" />
       <path value="$PROJECT_DIR$/api/vendor/zozlak/rdf-constants" />
       <path value="$PROJECT_DIR$/api/vendor/nikic/php-parser" />
       <path value="$PROJECT_DIR$/api/vendor/league/html-to-markdown" />
