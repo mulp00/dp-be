@@ -14,6 +14,8 @@ class AuthenticationSuccessListener
         $data = $event->getData();
         $refresh_token = $data['token'];
 
+        dump($response);
+
         $cookie = new Cookie(
             'BEARER',
             $refresh_token,
