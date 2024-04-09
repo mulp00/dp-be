@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     environment:
       PWA_UPSTREAM: pwa:3000
-      SERVER_NAME:  php:81, localhost:81, localhost:444, http://localhost:81, api.shary.cz, api.shary.cz:81, api.shary.cz:80
+      SERVER_NAME: ${SERVER_NAME:-localhost}, php:81
       MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
       MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
       TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
