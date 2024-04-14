@@ -47,10 +47,6 @@ class RegisterController
         if (!$email) {
             throw new BadRequestHttpException('email is required');
         }
-        $password = $data['password'] ?? null;
-        if (!$password) {
-            throw new BadRequestHttpException('password is required');
-        }
         $masterKey = $data['masterKey'] ?? null;
         if (!$masterKey) {
             throw new BadRequestHttpException('masterKey is required');
