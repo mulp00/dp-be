@@ -35,51 +35,31 @@ class GetMessagesCollectionController
     }
 
 
-    public function __invoke(Request $request, IriConverterInterface $iriConverter): Response
+    public function __invoke(Group $group, Request $request, IriConverterInterface $iriConverter): Response
     {
-
         $user = $this->security->getUser();
-
         if (!$user) {
-            throw new \RuntimeException('User must be authenticated to create this resource.');
+            throw new \RuntimeException('User must be authenticated to access this resource.');
         }
 
         if (!$user instanceof User) {
             throw new \RuntimeException('The authenticated user is not a valid \App\Entity\User instance.');
         }
 
-        $jsonContent = $request->getContent();
-        $data = json_decode($jsonContent, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new BadRequestHttpException('Invalid JSON body data');
-        }
-
-        $groupId = $data['groupId'] ?? null;
-        if (!$groupId) {
-            throw new BadRequestHttpException('groupId is required');
-        }
-        $epoch = $data['epoch'] ?? null;
+        $epoch = $request->query->get('epoch');
         if (!$epoch) {
             throw new BadRequestHttpException('epoch is required');
         }
-        /** @var Group $group */
-        $group = $iriConverter->getResourceFromIri('/groups/' . $groupId);
 
         if (!in_array($user, $group->getUsers()->toArray())) {
-            throw new BadRequestHttpException('You cant access this resource');
+            throw new BadRequestHttpException('You cannot access this resource');
         }
 
         $messages = $this->messageRepository->findMessagesByGroupIdWithMinEpoch($group->getId(), $epoch);
-
         $messagesCollectionDTO = new MessageCollectionDTO($messages);
-
         $jsonContentResponse = $this->serializer->serialize($messagesCollectionDTO->messages, 'json');
 
-
         return new Response($jsonContentResponse, Response::HTTP_OK, ['Content-Type' => 'application/json']);
-
-
     }
 
 }

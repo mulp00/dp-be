@@ -46,7 +46,7 @@ class GetUserByEmailController
             throw new \RuntimeException('The authenticated user is not a valid \App\Entity\User instance.');
         }
 
-        $searchedEmail = $request->get('id');
+        $searchedEmail = $request->query->get('email');
 
         $searchResult = $this->userRepository->findByPartialEmail($searchedEmail, 30);
 

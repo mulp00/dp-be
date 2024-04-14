@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
@@ -45,11 +46,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     operations: [
         new Get(),
-        new Get(normalizationContext: ['groups' => ['tst']]),
         new Post(
             uriTemplate: '/auth/register',
             controller: RegisterController::class,
-            read:false,
+            read: false,
         ),
         new Get(uriTemplate: '/auth/user/{id}/policy',
             controller: GetMFKDFByEmailController::class,
@@ -80,7 +80,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             read: false
         ),
         new Post(
-            uriTemplate: '/newGroup',
+            uriTemplate: '/groups',
             controller: CreateNewGroupController::class,
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
@@ -111,22 +111,24 @@ use Symfony\Component\Validator\Constraints as Assert;
             read: false,
         ),
         new Get(
-            uriTemplate: '/serializedGroupCollection',
+            uriTemplate: '/me/serialized-user-groups',
             controller: GetSerializedUserGroupCollection::class,
             read: false,
         ),
         new Get(
-            uriTemplate: '/getByEmail/{id}',
+            uriTemplate: '/users',
             controller: GetUserByEmailController::class,
+            output: false,
             read: false,
         ),
         new Get(
-            uriTemplate: '/getGroupsToJoin',
+            uriTemplate: '/me/groups-to-join',
             controller: GetGroupsToJoin::class,
+            output: false,
             read: false,
         ),
-        new Post(
-            uriTemplate: '/getCommitMessages',
+        new Get(
+            uriTemplate: '/groups/{id}/messages',
             controller: GetMessagesCollectionController::class,
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
@@ -135,9 +137,6 @@ use Symfony\Component\Validator\Constraints as Assert;
                                 'schema' => [
                                     'type' => 'object',
                                     'properties' => [
-                                        'groupId' => [
-                                            'type' => 'string',
-                                        ],
                                         'epoch' => [
                                             'type' => 'string',
                                         ],
@@ -151,7 +150,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             read: false,
         ),
         new Post(
-            uriTemplate: '/welcomeMessage',
+            uriTemplate: '/groups/{id}/welcome-messages',
             controller: CreateWelcomeMessage::class,
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
@@ -160,9 +159,6 @@ use Symfony\Component\Validator\Constraints as Assert;
                                 'schema' => [
                                     'type' => 'object',
                                     'properties' => [
-                                        'groupId' => [
-                                            'type' => 'string',
-                                        ],
                                         'memberId' => [
                                             'type' => 'string',
                                         ],
@@ -184,8 +180,8 @@ use Symfony\Component\Validator\Constraints as Assert;
             ),
             read: false,
         ),
-        new Post(
-            uriTemplate: '/removeUser',
+        new Delete(
+            uriTemplate: '/groups/{id}/users/{userId}',
             controller: RemoveUserFromGroupController::class,
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
@@ -197,12 +193,6 @@ use Symfony\Component\Validator\Constraints as Assert;
                                         'message' => [
                                             'type' => 'string',
                                         ],
-                                        'groupId' => [
-                                            'type' => 'string',
-                                        ],
-                                        'userId' => [
-                                            'type' => 'string',
-                                        ],
                                         'epoch' => [
                                             'type' => 'string',
                                         ],
@@ -216,7 +206,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             read: false,
         ),
         new Post(
-            uriTemplate: '/createGeneralCommitMessage',
+            uriTemplate: '/groups/{id}/messages',
             controller: CreateGeneralCommitMessageController::class,
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
@@ -228,9 +218,6 @@ use Symfony\Component\Validator\Constraints as Assert;
                                         'message' => [
                                             'type' => 'string',
                                         ],
-                                        'groupId' => [
-                                            'type' => 'string',
-                                        ],
                                         'epoch' => [
                                             'type' => 'string',
                                         ],
@@ -244,7 +231,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             read: false,
         ),
         new Post(
-            uriTemplate: '/createGroupItem',
+            uriTemplate: '/groups/{id}/items',
             controller: CreateGroupItemController::class,
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
@@ -257,9 +244,6 @@ use Symfony\Component\Validator\Constraints as Assert;
                                             'type' => 'string',
                                         ],
                                         'description' => [
-                                            'type' => 'string',
-                                        ],
-                                        'groupId' => [
                                             'type' => 'string',
                                         ],
                                         'type' => [
@@ -278,7 +262,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             read: false,
         ),
         new Patch(
-            uriTemplate: '/updateGroupItem',
+            uriTemplate: '/groups/{id}/items',
             controller: UpdateGroupItemController::class,
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
@@ -294,9 +278,6 @@ use Symfony\Component\Validator\Constraints as Assert;
                                             'type' => 'string',
                                         ],
                                         'description' => [
-                                            'type' => 'string',
-                                        ],
-                                        'groupId' => [
                                             'type' => 'string',
                                         ],
                                         'type' => [
@@ -317,52 +298,18 @@ use Symfony\Component\Validator\Constraints as Assert;
             ),
             read: false,
         ),
-        new Post(
-            uriTemplate: '/deleteGroupItem',
+        new Delete(
+            uriTemplate: '/groups/{id}/items/{itemId}',
             controller: DeleteGroupItemController::class,
-            openapi: new Model\Operation(
-                requestBody: new Model\RequestBody(
-                    content: new ArrayObject([
-                            'application/merge-patch+json' => [
-                                'schema' => [
-                                    'type' => 'object',
-                                    'properties' => [
-                                        'itemId' => [
-                                            'type' => 'string',
-                                        ],
-                                    ]
-                                ]
-                            ]
-                        ]
-                    )
-                )
-            ),
             read: false,
         ),
-        new Post(
-            uriTemplate: '/deleteGroup',
+        new Delete(
+            uriTemplate: '/groups/{id}',
             controller: DeleteGroupController::class,
-            openapi: new Model\Operation(
-                requestBody: new Model\RequestBody(
-                    content: new ArrayObject([
-                            'application/merge-patch+json' => [
-                                'schema' => [
-                                    'type' => 'object',
-                                    'properties' => [
-                                        'groupId' => [
-                                            'type' => 'string',
-                                        ],
-                                    ]
-                                ]
-                            ]
-                        ]
-                    )
-                )
-            ),
             read: false,
         ),
         new Post(
-            uriTemplate: '/leaveGroup',
+            uriTemplate: '/groups/{id}/leave',
             controller: LeaveGroupController::class,
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
@@ -372,9 +319,6 @@ use Symfony\Component\Validator\Constraints as Assert;
                                     'type' => 'object',
                                     'properties' => [
                                         'message' => [
-                                            'type' => 'string',
-                                        ],
-                                        'groupId' => [
                                             'type' => 'string',
                                         ],
                                         'epoch' => [
@@ -390,7 +334,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             read: false,
         ),
         new Post(
-            uriTemplate: '/createSerializedUserGroupAfterJoin',
+            uriTemplate: '/serialized-user-groups',
             controller: CreateSerializedUserGroupAfterJoinController::class,
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
@@ -420,33 +364,30 @@ use Symfony\Component\Validator\Constraints as Assert;
             ),
             read: false,
         ),
+//        new Patch(
+//            uriTemplate: '/groups/{id}/ratchet-tree',
+//            controller: UpdateRatchetTreeController::class,
+//            openapi: new Model\Operation(
+//                requestBody: new Model\RequestBody(
+//                    content: new ArrayObject([
+//                            'application/merge-patch+json' => [
+//                                'schema' => [
+//                                    'type' => 'object',
+//                                    'properties' => [
+//                                        'ratchetTree' => [
+//                                            'type' => 'string',
+//                                        ],
+//                                    ]
+//                                ]
+//                            ]
+//                        ]
+//                    )
+//                )
+//            ),
+//            read: false,
+//        ),
         new Patch(
-            uriTemplate: '/updateRatchetTree',
-            controller: UpdateRatchetTreeController::class,
-            openapi: new Model\Operation(
-                requestBody: new Model\RequestBody(
-                    content: new ArrayObject([
-                            'application/merge-patch+json' => [
-                                'schema' => [
-                                    'type' => 'object',
-                                    'properties' => [
-                                        'groupId' => [
-                                            'type' => 'string',
-                                        ],
-                                        'ratchetTree' => [
-                                            'type' => 'string',
-                                        ],
-                                    ]
-                                ]
-                            ]
-                        ]
-                    )
-                )
-            ),
-            read: false,
-        ),
-        new Patch(
-            uriTemplate: '/updateSerializedUserGroup',
+            uriTemplate: '/serialized-user-groups/{id}',
             controller: UpdateSerializedUserGroupController::class,
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
@@ -455,9 +396,6 @@ use Symfony\Component\Validator\Constraints as Assert;
                                 'schema' => [
                                     'type' => 'object',
                                     'properties' => [
-                                        'serializedUserGroupId' => [
-                                            'type' => 'string',
-                                        ],
                                         'serializedUserGroup' => [
                                             'type' => 'string',
                                         ],
@@ -474,7 +412,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             read: false,
         ),
         new Patch(
-            uriTemplate: '/updateKeyStore',
+            uriTemplate: '/me/key-store',
             controller: PatchKeyStoreController::class,
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
@@ -496,7 +434,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             read: false,
         ),
         new Patch(
-            uriTemplate: '/updateKeyPackage',
+            uriTemplate: '/me/key-package',
             controller: UpdateKeyPackageController::class,
             openapi: new Model\Operation(
                 requestBody: new Model\RequestBody(
@@ -517,26 +455,9 @@ use Symfony\Component\Validator\Constraints as Assert;
             ),
             read: false,
         ),
-        new Post(
-            uriTemplate: '/getGroupItems',
+        new Get(
+            uriTemplate: '/groups/{id}/items',
             controller: GetGroupItemCollectionController::class,
-            openapi: new Model\Operation(
-                requestBody: new Model\RequestBody(
-                    content: new ArrayObject([
-                            'application/merge-patch+json' => [
-                                'schema' => [
-                                    'type' => 'object',
-                                    'properties' => [
-                                        'groupId' => [
-                                            'type' => 'string',
-                                        ],
-                                    ]
-                                ]
-                            ]
-                        ]
-                    )
-                )
-            ),
             read: false,
         )
     ],
@@ -552,10 +473,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
-     private Uuid $id;
+    private Uuid $id;
 
     #[ORM\Column(length: 180)]
-    #[Groups([  'user:create', 'user:update', 'userCollection:read', 'serializedUserGroup:create', 'user:identity'])]
+    #[Groups(['user:create', 'user:update', 'userCollection:read', 'serializedUserGroup:create', 'user:identity'])]
     private ?string $email = null;
 
     /**
@@ -612,9 +533,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
 
         /** @var SerializedUserGroup $serializedUserGroup */
-        foreach ($this->serializedUserGroups as $serializedUserGroup)
-        {
-            if($serializedUserGroup->getGroupEntity() === $group){
+        foreach ($this->serializedUserGroups as $serializedUserGroup) {
+            if ($serializedUserGroup->getGroupEntity() === $group) {
                 return $serializedUserGroup;
             }
         }
@@ -871,7 +791,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->keyStore = $keyStore;
     }
-
 
 
 }
