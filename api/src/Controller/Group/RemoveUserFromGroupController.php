@@ -34,7 +34,7 @@ class RemoveUserFromGroupController
     }
 
 
-    public function __invoke(Request $request, IriConverterInterface $iriConverter): Response
+    public function __invoke(Group $group, Request $request, IriConverterInterface $iriConverter): Response
     {
         $user = $this->security->getUser();
 
@@ -57,10 +57,7 @@ class RemoveUserFromGroupController
         if (!$message) {
             throw new BadRequestHttpException('message is required');
         }
-        $groupId = $data['groupId'] ?? null;
-        if (!$groupId) {
-            throw new BadRequestHttpException('groupId is required');
-        }
+
         $targetUserId = $data['userId'] ?? null;
         if (!$targetUserId) {
             throw new BadRequestHttpException('targetUserId is required');
@@ -70,8 +67,6 @@ class RemoveUserFromGroupController
             throw new BadRequestHttpException('postedEpoch is required');
         }
 
-        /** @var Group $group */
-        $group = $iriConverter->getResourceFromIri('/groups/'.$groupId);
         /** @var User $removedUser */
         $removedUser = $iriConverter->getResourceFromIri('/users/'.$targetUserId);
 

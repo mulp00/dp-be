@@ -83,8 +83,13 @@ class CreateSerializedUserGroupAfterJoinController
             throw new BadRequestHttpException('You cant access this resource');
         }
 
+        /** @var WelcomeMessage $welcomeMessage */
+        $welcomeMessage = $iriConverter->getResourceFromIri('/welcome_messages/' . $welcomeMessageId);
+
         foreach ($user->getSerializedUserGroups() as $serializedUserGroup){
             if($serializedUserGroup->getGroupEntity() === $group){
+                $welcomeMessage->setIsJoined(true);
+                $this->entityManager->persist($welcomeMessage);
                 throw new BadRequestHttpException('Group already joined');
             }
         }
@@ -98,8 +103,7 @@ class CreateSerializedUserGroupAfterJoinController
 
         $jsonContentResponse = $this->serializer->serialize($serializedUserGroupDTO, 'json');
 
-        /** @var WelcomeMessage $welcomeMessage */
-        $welcomeMessage = $iriConverter->getResourceFromIri('/welcome_messages/' . $welcomeMessageId);
+
         $welcomeMessage->setIsJoined(true);
 
         $this->entityManager->persist($group);

@@ -42,7 +42,7 @@ class CreateWelcomeMessage
     }
 
 
-    public function __invoke(Request $request, IriConverterInterface $iriConverter): Response
+    public function __invoke(Group $group, Request $request, IriConverterInterface $iriConverter): Response
     {
         $user = $this->security->getUser();
 
@@ -61,18 +61,12 @@ class CreateWelcomeMessage
             throw new BadRequestHttpException('Invalid JSON body data');
         }
 
-        $groupId = $data['groupId'] ?? null;
         $memberId = $data['memberId'] ?? null;
         $welcomeMessageString = $data['welcomeMessage'] ?? null;
         $commitMessageContents = $data['commitMessage'] ?? null;
         $ratchetTree = $data['ratchetTree'] ?? null;
 
-        if (!$groupId || !$memberId || !$welcomeMessageString) {
-            throw new BadRequestHttpException('groupId, memberId and welcomeMessage are required');
-        }
 
-        /** @var Group $group */
-        $group = $iriConverter->getResourceFromIri('/groups/'.$groupId);
         /** @var User $member */
         $member = $iriConverter->getResourceFromIri('/users/'.$memberId);
 

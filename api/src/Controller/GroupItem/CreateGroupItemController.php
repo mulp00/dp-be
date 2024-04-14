@@ -35,7 +35,7 @@ class CreateGroupItemController
         $this->entityManager = $entityManager;
     }
 
-    public function __invoke(Request $request, IriConverterInterface $iriConverter): Response
+    public function __invoke(Group $group,Request $request, IriConverterInterface $iriConverter): Response
     {
 
         $user = $this->security->getUser();
@@ -63,10 +63,6 @@ class CreateGroupItemController
         if (!$description) {
             throw new BadRequestHttpException('description is required');
         }
-        $groupId = $data['groupId'] ?? null;
-        if (!$groupId) {
-            throw new BadRequestHttpException('groupId is required');
-        }
 
         $typeProvided = $data['type'] ?? null;
         if (!$typeProvided) {
@@ -83,13 +79,9 @@ class CreateGroupItemController
 
         $type = GroupItemType::from($typeProvided);
 
-        /** @var Group $group */
-        $group = $iriConverter->getResourceFromIri('/groups/' . $groupId);
-
         if ($postedEpoch !== $group->getEpoch()) {
             throw new BadRequestHttpException('Epochs dont match, catch up on group updates');
         }
-
 
         if (!in_array($user, $group->getUsers()->toArray())) {
             throw new BadRequestHttpException('You cant access this resource');

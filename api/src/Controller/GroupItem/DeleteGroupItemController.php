@@ -3,6 +3,7 @@
 namespace App\Controller\GroupItem;
 
 use ApiPlatform\Api\IriConverterInterface;
+use App\Entity\Group;
 use App\Entity\GroupItem;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -28,7 +29,7 @@ class DeleteGroupItemController
         $this->entityManager = $entityManager;
     }
 
-    public function __invoke(Request $request, IriConverterInterface $iriConverter): Response
+    public function __invoke(Group $group, GroupItem $groupItem, Request $request, IriConverterInterface $iriConverter): Response
     {
 
         $user = $this->security->getUser();
@@ -40,23 +41,6 @@ class DeleteGroupItemController
         if (!$user instanceof User) {
             throw new \RuntimeException('The authenticated user is not a valid \App\Entity\User instance.');
         }
-
-        $jsonContent = $request->getContent();
-        $data = json_decode($jsonContent, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new BadRequestHttpException('Invalid JSON body data');
-        }
-
-        $itemId = $data['itemId'] ?? null;
-        if (!$itemId) {
-            throw new BadRequestHttpException('id is required');
-        }
-
-
-
-        /** @var GroupItem $groupItem */
-        $groupItem = $iriConverter->getResourceFromIri('/group_items/' . $itemId);
 
         $group = $groupItem->getTargetGroup();
 

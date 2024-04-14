@@ -3,15 +3,77 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model;
+use App\Controller\SerializedUserGroup\CreateSerializedUserGroupAfterJoinController;
+use App\Controller\SerializedUserGroup\UpdateSerializedUserGroupController;
 use App\Repository\SerializedUserGroupRepository;
+use ArrayObject;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation as Serializer;
 use Symfony\Component\Uid\Uuid;
 
 #[ApiResource(
     operations: [
-        new Get()
+        new Post(
+            uriTemplate: '/serialized-user-groups',
+            controller: CreateSerializedUserGroupAfterJoinController::class,
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new ArrayObject([
+                            'application/ld+json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'groupId' => [
+                                            'type' => 'string',
+                                        ],
+                                        'serializedUserGroup' => [
+                                            'type' => 'string',
+                                        ],
+                                        'epoch' => [
+                                            'type' => 'string',
+                                        ],
+                                        'welcomeMessageId' => [
+                                            'type' => 'string',
+                                        ],
+                                    ]
+                                ]
+                            ]
+                        ]
+                    )
+                )
+            ),
+            read: false,
+            deserialize: false,
+        ),
+        new Patch(
+            uriTemplate: '/serialized-user-groups/{id}',
+            controller: UpdateSerializedUserGroupController::class,
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new ArrayObject([
+                            'application/merge-patch+json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'serializedUserGroup' => [
+                                            'type' => 'string',
+                                        ],
+                                        'epoch' => [
+                                            'type' => 'string',
+                                        ],
+                                    ]
+                                ]
+                            ]
+                        ]
+                    )
+                )
+            ),
+            read: false,
+            deserialize: false,
+        ),
     ]
 )]
 #[ORM\Entity(repositoryClass: SerializedUserGroupRepository::class)]
@@ -81,7 +143,6 @@ class SerializedUserGroup
     {
         $this->serializedGroup = $serializedGroup;
     }
-
 
 
     public function getGroupEntity(): ?Group

@@ -2,14 +2,12 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
 use App\Enum\GroupItemType;
 use App\Repository\GroupItemRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: GroupItemRepository::class)]
-#[ApiResource]
 class GroupItem
 {
     #[ORM\Id]

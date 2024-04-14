@@ -32,7 +32,7 @@ class CreateGeneralCommitMessageController
         $this->messageRepository = $messageRepository;
     }
 
-    public function __invoke(Request $request, IriConverterInterface $iriConverter): Response
+    public function __invoke(Group $group, Request $request, IriConverterInterface $iriConverter): Response
     {
         $user = $this->security->getUser();
 
@@ -55,17 +55,11 @@ class CreateGeneralCommitMessageController
         if (!$message) {
             throw new BadRequestHttpException('message is required');
         }
-        $groupId = $data['groupId'] ?? null;
-        if (!$groupId) {
-            throw new BadRequestHttpException('groupId is required');
-        }
+
         $postedEpoch = $data['epoch'] ?? null;
         if (!$postedEpoch) {
             throw new BadRequestHttpException('postedEpoch is required');
         }
-
-        /** @var Group $group */
-        $group = $iriConverter->getResourceFromIri('/groups/'.$groupId);
 
         if (!in_array($user, $group->getUsers()->toArray())) {
             throw new BadRequestHttpException('You cant access this resource');

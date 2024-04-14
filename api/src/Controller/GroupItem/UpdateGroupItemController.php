@@ -35,7 +35,7 @@ class UpdateGroupItemController
         $this->entityManager = $entityManager;
     }
 
-    public function __invoke(Request $request, IriConverterInterface $iriConverter): Response
+    public function __invoke(Group $group, GroupItem $groupItem, Request $request, IriConverterInterface $iriConverter): Response
     {
 
         $user = $this->security->getUser();
@@ -55,10 +55,6 @@ class UpdateGroupItemController
             throw new BadRequestHttpException('Invalid JSON body data');
         }
 
-        $itemId = $data['itemId'] ?? null;
-        if (!$itemId) {
-            throw new BadRequestHttpException('id is required');
-        }
         $name = $data['name'] ?? null;
         if (!$name) {
             throw new BadRequestHttpException('name is required');
@@ -66,10 +62,6 @@ class UpdateGroupItemController
         $description = $data['description'] ?? null;
         if (!$description) {
             throw new BadRequestHttpException('description is required');
-        }
-        $groupId = $data['groupId'] ?? null;
-        if (!$groupId) {
-            throw new BadRequestHttpException('groupId is required');
         }
 
         $typeProvided = $data['type'] ?? null;
@@ -86,12 +78,6 @@ class UpdateGroupItemController
         }
 
         $type = GroupItemType::from($typeProvided);
-
-        /** @var Group $group */
-        $group = $iriConverter->getResourceFromIri('/groups/' . $groupId);
-
-        /** @var GroupItem $groupItem */
-        $groupItem = $iriConverter->getResourceFromIri('/group_items/' . $itemId);
 
         if (!in_array($user, $group->getUsers()->toArray())) {
             throw new BadRequestHttpException('You cant access this resource');

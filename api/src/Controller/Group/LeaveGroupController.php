@@ -31,7 +31,7 @@ class LeaveGroupController
         $this->entityManager = $entityManager;
         $this->messageRepository = $messageRepository;
     }
-    public function __invoke(Request $request, IriConverterInterface $iriConverter): Response
+    public function __invoke(Group $group, Request $request, IriConverterInterface $iriConverter): Response
     {
         $user = $this->security->getUser();
 
@@ -51,15 +51,8 @@ class LeaveGroupController
         }
 
         $message = $data['message'] ?? null;
-        $groupId = $data['groupId'] ?? null;
         $postedEpoch = $data['epoch'] ?? null;
 
-        if (!$message || !$groupId || !$postedEpoch) {
-            throw new BadRequestHttpException('message, groupId and epoch are required');
-        }
-
-        /** @var Group $group */
-        $group = $iriConverter->getResourceFromIri('/groups/'.$groupId);
 
         $latestMessage = $this->messageRepository->findLatestMessageByGroupId($group->getId());
         $lastMessageEpochNumber = $latestMessage ? $latestMessage->getEpoch() : 1;

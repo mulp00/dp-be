@@ -3,7 +3,21 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use App\Controller\Group\CreateNewGroupController;
+use App\Controller\Group\DeleteGroupController;
+use App\Controller\Group\LeaveGroupController;
+use App\Controller\Group\RemoveUserFromGroupController;
+use App\Controller\GroupItem\CreateGroupItemController;
+use App\Controller\GroupItem\DeleteGroupItemController;
+use App\Controller\GroupItem\GetGroupItemCollectionController;
+use App\Controller\GroupItem\UpdateGroupItemController;
+use App\Controller\Message\CreateGeneralCommitMessageController;
+use App\Controller\Message\GetMessagesCollectionController;
+use App\Controller\WelcomeMessage\CreateWelcomeMessage;
 use App\Repository\GroupRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -11,9 +25,261 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation as Serializer;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Uid\Uuid;
+use ApiPlatform\OpenApi\Model;
+use ArrayObject;
 
 #[ApiResource(operations: [
-    new Get()
+    new Get(),
+    new Post(
+        uriTemplate: '/groups',
+        controller: CreateNewGroupController::class,
+        openapi: new Model\Operation(
+            requestBody: new Model\RequestBody(
+                content: new ArrayObject([
+                        'application/ld+json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'serializedGroup' => [
+                                        'type' => 'string',
+                                    ],
+                                    'name' => [
+                                        'type' => 'string',
+                                    ],
+                                    'ratchetTree' => [
+                                        'type' => 'string',
+                                    ],
+                                ]
+                            ]
+                        ]
+                    ]
+                )
+            )
+        ),
+        read: false,
+        deserialize: false,
+    ),
+    new Get(
+        uriTemplate: '/groups/{id}/messages',
+        controller: GetMessagesCollectionController::class,
+        openapi: new Model\Operation(
+            requestBody: new Model\RequestBody(
+                content: new ArrayObject([
+                        'application/ld+json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'epoch' => [
+                                        'type' => 'string',
+                                    ],
+                                ]
+                            ]
+                        ]
+                    ]
+                )
+            )
+        ),
+        read: false,
+        deserialize: false,
+    ),
+    new Post(
+        uriTemplate: '/groups/{id}/welcome-messages',
+        controller: CreateWelcomeMessage::class,
+        openapi: new Model\Operation(
+            requestBody: new Model\RequestBody(
+                content: new ArrayObject([
+                        'application/ld+json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'memberId' => [
+                                        'type' => 'string',
+                                    ],
+                                    'welcomeMessage' => [
+                                        'type' => 'string',
+                                    ],
+                                    'commitMessage' => [
+                                        'type' => 'string',
+                                    ],
+                                    'ratchetTree' => [
+                                        'type' => 'string',
+                                    ],
+                                ]
+                            ]
+                        ]
+                    ]
+                )
+            )
+        ),
+        read: false,
+        deserialize: false,
+    ),
+    new Delete(
+        uriTemplate: '/groups/{id}/users/{userId}',
+        controller: RemoveUserFromGroupController::class,
+        openapi: new Model\Operation(
+            requestBody: new Model\RequestBody(
+                content: new ArrayObject([
+                        'application/ld+json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'message' => [
+                                        'type' => 'string',
+                                    ],
+                                    'epoch' => [
+                                        'type' => 'string',
+                                    ],
+                                ]
+                            ]
+                        ]
+                    ]
+                )
+            )
+        ),
+        read: false,
+        deserialize: false,
+    ),
+    new Post(
+        uriTemplate: '/groups/{id}/messages',
+        controller: CreateGeneralCommitMessageController::class,
+        openapi: new Model\Operation(
+            requestBody: new Model\RequestBody(
+                content: new ArrayObject([
+                        'application/ld+json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'message' => [
+                                        'type' => 'string',
+                                    ],
+                                    'epoch' => [
+                                        'type' => 'string',
+                                    ],
+                                ]
+                            ]
+                        ]
+                    ]
+                )
+            )
+        ),
+        read: false,
+        deserialize: false,
+    ),
+    new Post(
+        uriTemplate: '/groups/{id}/group-items',
+        controller: CreateGroupItemController::class,
+        openapi: new Model\Operation(
+            requestBody: new Model\RequestBody(
+                content: new ArrayObject([
+                        'application/ld+json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'name' => [
+                                        'type' => 'string',
+                                    ],
+                                    'description' => [
+                                        'type' => 'string',
+                                    ],
+                                    'type' => [
+                                        'type' => 'string',
+                                    ],
+                                    'content' => [
+                                        'type' => 'string',
+                                    ],
+                                ]
+                            ]
+                        ]
+                    ]
+                )
+            )
+        ),
+        read: false,
+        deserialize: false,
+    ),
+    new Patch(
+        uriTemplate: '/groups/{id}/group-items/{groupItem}',
+        controller: UpdateGroupItemController::class,
+        openapi: new Model\Operation(
+            requestBody: new Model\RequestBody(
+                content: new ArrayObject([
+                        'application/merge-patch+json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'itemId' => [
+                                        'type' => 'string',
+                                    ],
+                                    'name' => [
+                                        'type' => 'string',
+                                    ],
+                                    'description' => [
+                                        'type' => 'string',
+                                    ],
+                                    'type' => [
+                                        'type' => 'string',
+                                    ],
+                                    'content' => [
+                                        'type' => 'string',
+                                    ],
+                                    'epoch' => [
+                                        'type' => 'string',
+                                    ],
+                                ]
+                            ]
+                        ]
+                    ]
+                )
+            )
+        ),
+        read: false,
+        deserialize: false,
+    ),
+    new Delete(
+        uriTemplate: '/groups/{id}/group-items/{groupItem}',
+        controller: DeleteGroupItemController::class,
+        read: false,
+        deserialize: false,
+    ),
+    new Delete(
+        uriTemplate: '/groups/{id}',
+        controller: DeleteGroupController::class,
+        read: false,
+        deserialize: false,
+    ),
+    new Post(
+        uriTemplate: '/groups/{id}/leave',
+        controller: LeaveGroupController::class,
+        openapi: new Model\Operation(
+            requestBody: new Model\RequestBody(
+                content: new ArrayObject([
+                        'application/ld+json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'message' => [
+                                        'type' => 'string',
+                                    ],
+                                    'epoch' => [
+                                        'type' => 'string',
+                                    ],
+                                ]
+                            ]
+                        ]
+                    ]
+                )
+            )
+        ),
+        read: false,
+        deserialize: false,
+    ),
+    new Get(
+        uriTemplate: '/groups/{id}/group-items',
+        controller: GetGroupItemCollectionController::class,
+        read: false,
+        deserialize: false,
+    )
 ])]
 #[ORM\Entity(repositoryClass: GroupRepository::class)]
 #[ORM\Table(name: '`group`')]
@@ -157,7 +423,7 @@ class Group
 
     public function addEpoch(): void
     {
-        $this->epoch = $this->epoch +1;
+        $this->epoch = $this->epoch + 1;
     }
 
     /**
@@ -189,8 +455,6 @@ class Group
 
         return $this;
     }
-
-
 
 
 }
