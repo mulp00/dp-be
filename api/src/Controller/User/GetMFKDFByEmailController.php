@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Controller\MFKDFPolicy;
+namespace App\Controller\User;
 
 use ApiPlatform\Api\IriConverterInterface;
-use App\Entity\MFKDFPolicy;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpFoundation\Response;
 
 #[AsController]
 class GetMFKDFByEmailController extends AbstractController
@@ -25,7 +25,7 @@ class GetMFKDFByEmailController extends AbstractController
     }
 
 
-    public function __invoke(Request $request, IriConverterInterface $iriConverter): MFKDFPolicy
+    public function __invoke(Request $request, IriConverterInterface $iriConverter): Response
     {
 
         // Get text fields from form data
@@ -33,11 +33,14 @@ class GetMFKDFByEmailController extends AbstractController
 
         // Basic validation for required fields
         if (!$email) {
-            throw new BadRequestHttpException('Name is required');
+            throw new BadRequestHttpException('Email is required');
         }
 
+        $mkdfpolicy = $this->userRepository->findOneBy(['email' => $email])->getMfkdfpolicy();
 
-        return $this->userRepository->findOneBy(['email'=>$email])->getMfkdfpolicy();
+        return new Response($mkdfpolicy, Response::HTTP_OK, ['Content-Type' => 'application/json']);
+
+
     }
 
 }

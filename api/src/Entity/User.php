@@ -8,8 +8,8 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use App\Controller\Group\GetGroupsToJoin;
-use App\Controller\MFKDFPolicy\GetMFKDFByEmailController;
 use App\Controller\SerializedUserGroup\GetSerializedUserGroupCollection;
+use App\Controller\User\GetMFKDFByEmailController;
 use App\Controller\User\GetUserByEmailController;
 use App\Controller\User\GetUserIdentityController;
 use App\Controller\User\PatchKeyStoreController;
@@ -179,9 +179,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $masterKeyHash = null;
 
-    #[ORM\OneToOne(mappedBy: 'policyUser', cascade: ['persist', 'remove'])]
-    #[Groups(['user:create', 'user:update', 'mfkdfpolicy:read'])]
-    private ?MFKDFPolicy $mfkdfpolicy = null;
+    #[ORM\Column(type: 'text')]
+    #[Groups(['mfkdfpolicy:read', 'mfkdfpolicy:create', 'mfkdfpolicy:update', 'user:create', 'user:update'])]
+    private string $mfkdfpolicy;
 
     #[ORM\Column(type: 'array', nullable: true)]
     #[Groups(['user:create', 'user:update', 'user:identity'])]
@@ -314,21 +314,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     }
 
-    public function getMfkdfpolicy(): ?MFKDFPolicy
+    public function getMfkdfpolicy(): string
     {
         return $this->mfkdfpolicy;
     }
 
-    public function setMfkdfpolicy(MFKDFPolicy $mfkdfpolicy): static
+    public function setMfkdfpolicy(string $mfkdfpolicy): void
     {
-        // set the owning side of the relation if necessary
-        if ($mfkdfpolicy->getPolicyUser() !== $this) {
-            $mfkdfpolicy->setPolicyUser($this);
-        }
-
         $this->mfkdfpolicy = $mfkdfpolicy;
-
-        return $this;
     }
 
     public function getSerializedIdentity(): ?array

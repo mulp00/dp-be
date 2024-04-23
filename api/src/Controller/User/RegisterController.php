@@ -87,17 +87,12 @@ class RegisterController
 
         $user->setMasterKeyHash($masterKeyHash);
 
-        $mfkdfpolicy = new MFKDFPolicy();
-        $mfkdfpolicy->setPolicy($postedMfkdfpolicy['policy']);
-        $mfkdfpolicy->setPolicyUser($user);
-
-        $user->setMfkdfpolicy($mfkdfpolicy);
+        $user->setMfkdfpolicy($postedMfkdfpolicy);
         $user->setSerializedIdentity($serializedIdentity);
         $user->setKeyPackage($keyPackage);
         $user->setKeyStore($keyStore);
 
         $this->entityManager->persist($user);
-        $this->entityManager->persist($mfkdfpolicy);
         $this->entityManager->flush();
 
         return new Response(null, Response::HTTP_OK, ['Content-Type' => 'application/json']);
